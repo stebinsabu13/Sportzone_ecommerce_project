@@ -1,1 +1,1 @@
-# Ecommerce project of a sports store
+# This ecommerce api is following clean code architecture
