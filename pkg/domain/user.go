@@ -11,4 +11,5 @@ type User struct {
 	Email     string `json:"email" binding:"required" gorm:"uniqueIndex;not null"`
 	MobileNum string `json:"mobilenum" binding:"required" gorm:"uniqueIndex;not null"`
 	Password  string `json:"password" binding:"required" gorm:"not null"`
+	Block     bool   `json:"block" gorm:"default:false"`
 }

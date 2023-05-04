@@ -8,3 +8,8 @@ type BodyLogin struct {
 type Otpverify struct {
 	Otp string `binding:"required"`
 }
+
+type OtpLogin struct {
+	Email     string
+	MobileNum string
+}

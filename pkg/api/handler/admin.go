@@ -2,10 +2,12 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stebinsabu13/ecommerce-api/pkg/auth"
+	"github.com/stebinsabu13/ecommerce-api/pkg/domain"
 	"github.com/stebinsabu13/ecommerce-api/pkg/support"
 	services "github.com/stebinsabu13/ecommerce-api/pkg/usecase/interface"
 	"github.com/stebinsabu13/ecommerce-api/pkg/utils"
@@ -126,3 +128,77 @@ func (cr *AdminHandler) LogoutHandler(c *gin.Context) {
 // 		"User registration": "Success",
 // 	})
 // }
+
+func (cr *AdminHandler) ListAllUsers(c *gin.Context) {
+	users, err := cr.AdminUseCase.ListAllUsers(c.Request.Context())
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Users": users,
+	})
+}
+
+func (cr *AdminHandler) AccessManage(c *gin.Context) {
+	id := c.Param("userid")
+	str := c.Query("access")
+	access, _ := strconv.ParseBool(str)
+	err := cr.AdminUseCase.AccessManage(c.Request.Context(), id, access)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Access": "Updated",
+	})
+}
+
+func (cr *AdminHandler) ListAllCategories(c *gin.Context) {
+	categories, err := cr.AdminUseCase.ListAllCategories(c.Request.Context())
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Categories": categories,
+	})
+}
+
+func (cr *AdminHandler) AddCategory(c *gin.Context) {
+	var category domain.Category
+	if err := c.BindJSON(&category); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": "error while binding json",
+		})
+		return
+	}
+	if err := cr.AdminUseCase.AddCategory(c.Request.Context(), category); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success": "Adding category",
+	})
+}
+
+func (cr *AdminHandler) DeleteCategory(c *gin.Context) {
+	id := c.Param("categoryid")
+	if err := cr.AdminUseCase.DeleteCategory(c.Request.Context(), id); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success": "Deleting category",
+	})
+}

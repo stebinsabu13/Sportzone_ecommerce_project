@@ -3,6 +3,7 @@ package interfaces
 import (
 	"context"
 
+	"github.com/stebinsabu13/ecommerce-api/pkg/domain"
 	"github.com/stebinsabu13/ecommerce-api/pkg/utils"
 )
 
@@ -14,4 +15,7 @@ type ProductRepository interface {
 	FindAvailableSize(ctx context.Context, id string) ([]utils.Size, error)
 	FindProductDesc(ctx context.Context, id string) (utils.ResponseProducts, error)
 	FindProductDiscount(ctx context.Context, id string) (uint, error)
+	AddProduct(ctx context.Context, product domain.ProductDetails) error
+	EditProduct(ctx context.Context, product domain.ProductDetails) error
+	DeleteProduct(ctx context.Context, id string) error
 }

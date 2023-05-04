@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/stebinsabu13/ecommerce-api/pkg/domain"
 	interfaces "github.com/stebinsabu13/ecommerce-api/pkg/repository/interface"
 	"github.com/stebinsabu13/ecommerce-api/pkg/utils"
 	"gorm.io/gorm"
@@ -120,4 +121,28 @@ func (c *ProductDatabase) FindProductDiscount(ctx context.Context, id string) (u
 		return Discount, errors.New("failed to load products discount")
 	}
 	return Discount, nil
+}
+
+func (c *ProductDatabase) AddProduct(ctx context.Context, product domain.ProductDetails) error {
+	result := c.DB.Create(&product).Error
+	if result != nil {
+		return errors.New("failed to add product")
+	}
+	return nil
+}
+
+func (c *ProductDatabase) EditProduct(ctx context.Context, product domain.ProductDetails) error {
+	result := c.DB.Save(&product).Error
+	if result != nil {
+		return errors.New("failed to update product")
+	}
+	return nil
+}
+
+func (c *ProductDatabase) DeleteProduct(ctx context.Context, id string) error {
+	result := c.DB.Where("id=?", id).Delete(&domain.ProductDetails{}).Error
+	if result != nil {
+		return errors.New("failed to delete")
+	}
+	return nil
 }

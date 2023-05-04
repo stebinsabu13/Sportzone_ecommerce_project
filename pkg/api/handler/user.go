@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -13,6 +14,9 @@ import (
 	"github.com/stebinsabu13/ecommerce-api/pkg/auth"
 	services "github.com/stebinsabu13/ecommerce-api/pkg/usecase/interface"
 )
+
+var signUp_user domain.User
+var loginOtp_user domain.User
 
 type UserHandler struct {
 	userUseCase services.UserUseCase
@@ -73,8 +77,6 @@ func (cr *UserHandler) LoginHandler(c *gin.Context) {
 	})
 }
 
-var signUp_user domain.User
-
 func (cr *UserHandler) SignUp(c *gin.Context) {
 	if err := c.BindJSON(&signUp_user); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
@@ -115,7 +117,7 @@ func (cr *UserHandler) SignUp(c *gin.Context) {
 	})
 }
 
-func (cr *UserHandler) Otpverify(c *gin.Context) {
+func (cr *UserHandler) SignupOtpverify(c *gin.Context) {
 	var otp utils.Otpverify
 	if err := c.BindJSON(&otp); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
@@ -165,5 +167,60 @@ func (cr *UserHandler) LogoutHandler(c *gin.Context) {
 	c.SetCookie("user-token", "", -1, "/", "localhost", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"logout": "Success",
+	})
+}
+
+func (cr *UserHandler) LoginOtp(c *gin.Context) {
+	var body utils.OtpLogin
+	if err := c.BindJSON(&body); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	loginOtp_user, err := cr.userUseCase.FindbyEmailorMobilenum(c.Request.Context(), body)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	_, err1 := utils.TwilioSendOTP("+91" + loginOtp_user.MobileNum)
+	if err1 != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed generating otp",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success": "Enter the otp",
+	})
+}
+
+func (cr *UserHandler) LoginOtpverify(c *gin.Context) {
+	var otp utils.Otpverify
+	if err := c.BindJSON(&otp); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": "Error binding json",
+		})
+		return
+	}
+	fmt.Println(loginOtp_user.MobileNum)
+	if err := utils.TwilioVerifyOTP("+91"+loginOtp_user.MobileNum, otp.Otp); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid Otp",
+		})
+		return
+	}
+	tokenString, err1 := auth.GenerateJWT(loginOtp_user.Email)
+	if err1 != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": "error generationg token",
+		})
+		return
+	}
+	c.SetCookie("user-token", tokenString, int(time.Now().Add(60*time.Minute).Unix()), "/", "localhost", false, true)
+	c.JSON(http.StatusOK, gin.H{
+		"Success": "Login",
 	})
 }

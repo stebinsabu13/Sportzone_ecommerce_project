@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stebinsabu13/ecommerce-api/pkg/domain"
 	"github.com/stebinsabu13/ecommerce-api/pkg/support"
 	services "github.com/stebinsabu13/ecommerce-api/pkg/usecase/interface"
 )
@@ -64,5 +65,59 @@ func (cr *ProductHandler) FindProductById(c *gin.Context) {
 	productDetails := support.CalculateTotalPrice(descProd, availablecolours, availablesizes, discount)
 	c.JSON(http.StatusOK, gin.H{
 		"Product_Details": productDetails,
+	})
+}
+
+func (cr *ProductHandler) AddProduct(c *gin.Context) {
+	var product domain.ProductDetails
+	if err := c.BindJSON(&product); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
+	err := cr.productUseCase.AddProduct(c.Request.Context(), product)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success": "Product added",
+	})
+}
+
+func (cr ProductHandler) EditProduct(c *gin.Context) {
+	var product domain.ProductDetails
+	if err := c.BindJSON(&product); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
+	err := cr.productUseCase.EditProduct(c.Request.Context(), product)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success": "Product edited",
+	})
+}
+
+func (cr *ProductHandler) DeleteProduct(c *gin.Context) {
+	id := c.Param("productid")
+	err := cr.productUseCase.DeleteProduct(c.Request.Context(), id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success": "Product deleted",
 	})
 }

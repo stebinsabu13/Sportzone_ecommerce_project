@@ -6,24 +6,26 @@ type Product struct {
 	gorm.Model
 	ProductName string `json:"productname" gorm:"not null"`
 	CategoryId  uint   `json:"categoryid" gorm:"foreignKey:CategoryID"`
-	InventoryId uint   `json:"inventoryid" gorm:"foreignkey:InventoryID"`
-	CouponId    uint   `json:"couponid" gorm:"foreignkey:CouponID"`
+	// InventoryId uint   `json:"inventoryid" gorm:"foreignkey:InventoryID"`
+	CouponId uint `json:"couponid" gorm:"foreignkey:CouponID"`
 }
 
 type ProductDetails struct {
 	gorm.Model
-	ModelName  string `json:"modelname" gorm:"not null"`
-	Price      uint   `json:"price" gorm:"not null"`
-	Image      string `json:"image" gorm:"not null"`
-	ProductId  uint   `json:"productid" gorm:"foreignkey:ProductID"`
-	DiscountId uint   `json:"discountid" gorm:"foreignkey:DiscountID"`
-	BrandId    uint   `json:"brandid" gorm:"foreignkey:BrandID"`
+	ModelName   string `json:"modelname" gorm:"not null"`
+	Price       uint   `json:"price" gorm:"not null"`
+	Image       string `json:"image" gorm:"not null"`
+	ProductId   uint   `json:"productid" gorm:"foreignkey:ProductID"`
+	DiscountId  uint   `json:"discountid" gorm:"foreignkey:DiscountID"`
+	BrandId     uint   `json:"brandid" gorm:"foreignkey:BrandID"`
+	InventoryId uint   `json:"inventoryid" gorm:"foreignkey:InventoryID"`
 }
 
 type Brand struct {
 	ID        uint   `json:"id" gorm:"primary_key;auto_increment"`
 	BrandName string `json:"brandname" gorm:"not null"`
 }
+
 type Category struct {
 	gorm.Model
 	CategoryName string `json:"categoryname" gorm:"not null"`

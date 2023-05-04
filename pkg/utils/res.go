@@ -4,6 +4,8 @@ type Colours string
 
 type Size string
 
+type ResponseCategory string
+
 // type Product string
 
 type ResponseProducts struct {
@@ -22,4 +24,12 @@ type ResponseProductDetails struct {
 	AvailableColours   []Colours `json:"availablecolours"`
 	AvailableSizes     []Size    `json:"availablesizes"`
 	PayableAmount      uint      `json:"payableamount"`
+}
+
+type ResponseUsers struct {
+	FirstName string `json:"firstname"`
+	LastName  string `json:"lastname"`
+	Email     string `json:"email"`
+	MobileNum string `json:"mobilenum"`
+	Block     bool   `json:"blocked"`
 }

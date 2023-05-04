@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 
+	"github.com/stebinsabu13/ecommerce-api/pkg/domain"
 	interfaces "github.com/stebinsabu13/ecommerce-api/pkg/repository/interface"
 	services "github.com/stebinsabu13/ecommerce-api/pkg/usecase/interface"
 	"github.com/stebinsabu13/ecommerce-api/pkg/utils"
@@ -51,4 +52,19 @@ func (c *productUseCase) FindProductDesc(ctx context.Context, id string) (utils.
 func (c *productUseCase) FindProductDiscount(ctx context.Context, id string) (uint, error) {
 	discount, err := c.Productrepo.FindProductDiscount(ctx, id)
 	return discount, err
+}
+
+func (c *productUseCase) AddProduct(ctx context.Context, product domain.ProductDetails) error {
+	err := c.Productrepo.AddProduct(ctx, product)
+	return err
+}
+
+func (c *productUseCase) EditProduct(ctx context.Context, product domain.ProductDetails) error {
+	err := c.Productrepo.EditProduct(ctx, product)
+	return err
+}
+
+func (c *productUseCase) DeleteProduct(ctx context.Context, id string) error {
+	err := c.Productrepo.DeleteProduct(ctx, id)
+	return err
 }

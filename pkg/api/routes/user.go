@@ -13,12 +13,14 @@ func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productH
 	{
 		// Request JWT
 		login.POST("/login", userHandler.LoginHandler)
+		login.POST("/login/otp", userHandler.LoginOtp)
+		login.POST("/login/otp/verify", userHandler.LoginOtpverify)
 
 	}
 	signup := api.Group("/user")
 	{
 		signup.POST("/signup", userHandler.SignUp)
-		signup.POST("/signup/otpverify", userHandler.Otpverify)
+		signup.POST("/signup/otp/verify", userHandler.SignupOtpverify)
 	}
 	home := api.Group("/user")
 	{
