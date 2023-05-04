@@ -37,3 +37,13 @@ func (c *userUseCase) FindbyEmailorMobilenum(ctx context.Context, body utils.Otp
 	user, err := c.userRepo.FindbyEmailorMobilenum(ctx, body)
 	return user, err
 }
+
+func (c *userUseCase) ShowDetails(ctx context.Context, id string) (utils.ResponseUsers, error) {
+	user, err := c.userRepo.ShowDetails(ctx, id)
+	return user, err
+}
+
+func (c *userUseCase) ShowAddress(ctx context.Context, id string) ([]utils.Address, error) {
+	address, err := c.userRepo.ShowAddress(ctx, id)
+	return address, err
+}

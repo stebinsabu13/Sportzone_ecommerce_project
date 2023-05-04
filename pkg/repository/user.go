@@ -54,3 +54,22 @@ func (c *userDatabase) SignUpUser(ctx context.Context, user domain.User) error {
 	err := c.DB.Create(&user).Error
 	return err
 }
+
+func (c *userDatabase) ShowDetails(ctx context.Context, id string) (utils.ResponseUsers, error) {
+	var user utils.ResponseUsers
+	query := `SELECT first_name,last_name,email,mobile_num from users where id=?`
+	if err := c.DB.Raw(query, id).Scan(&user).Error; err != nil {
+		return user, err
+	}
+	return user, nil
+
+}
+
+func (c *userDatabase) ShowAddress(ctx context.Context, id string) ([]utils.Address, error) {
+	var address []utils.Address
+	query := `select id,house_name,street,city,state,country,pincode from addresses where user_id=?`
+	if err := c.DB.Raw(query, id).Scan(&address).Error; err != nil {
+		return address, err
+	}
+	return address, nil
+}

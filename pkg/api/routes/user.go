@@ -33,5 +33,9 @@ func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productH
 			product.GET("/", productHandler.FindAllProducts)
 			product.GET("/:id", productHandler.FindProductById)
 		}
+		profile := home.Group("/profile")
+		{
+			profile.GET("/:userid", userHandler.ShowUserDetails)
+		}
 	}
 }

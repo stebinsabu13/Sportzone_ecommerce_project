@@ -12,4 +12,6 @@ type UserUseCase interface {
 	FindbyEmail(ctx context.Context, email string) (domain.User, error)
 	SignUpUser(ctx context.Context, user domain.User) error
 	FindbyEmailorMobilenum(ctx context.Context, body utils.OtpLogin) (domain.User, error)
+	ShowDetails(ctx context.Context, id string) (utils.ResponseUsers, error)
+	ShowAddress(ctx context.Context, id string) ([]utils.Address, error)
 }

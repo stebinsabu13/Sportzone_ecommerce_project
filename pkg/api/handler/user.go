@@ -72,6 +72,7 @@ func (cr *UserHandler) LoginHandler(c *gin.Context) {
 		return
 	}
 	c.SetCookie("user-token", tokenString, int(time.Now().Add(60*time.Minute).Unix()), "/", "localhost", false, true)
+	c.Set("user-email", user.Email)
 	c.JSON(http.StatusOK, gin.H{
 		"Success": "Login",
 	})
@@ -222,5 +223,27 @@ func (cr *UserHandler) LoginOtpverify(c *gin.Context) {
 	c.SetCookie("user-token", tokenString, int(time.Now().Add(60*time.Minute).Unix()), "/", "localhost", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"Success": "Login",
+	})
+}
+
+func (cr *UserHandler) ShowUserDetails(c *gin.Context) {
+	id := c.Param("userid")
+	details, err := cr.userUseCase.ShowDetails(c.Request.Context(), id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	address, err := cr.userUseCase.ShowAddress(c.Request.Context(), id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	profile := support.BuildProfile(details, address)
+	c.JSON(http.StatusOK, gin.H{
+		"Profile": profile,
 	})
 }
