@@ -8,7 +8,7 @@ import (
 )
 
 type ProductUseCase interface {
-	FindAllProducts(ctx context.Context) ([]utils.ResponseProducts, error)
+	FindAllProducts(context.Context, utils.Pagination) ([]utils.ResponseProducts, error)
 	// FindProductById(ctx context.Context, id string) (utils.ResponseProductDetails, error)
 	// FindProduct(ctx context.Context, id string) (utils.Product, error)
 	FindAvailableColours(ctx context.Context, id string) ([]utils.Colours, error)

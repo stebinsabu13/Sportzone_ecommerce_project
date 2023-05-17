@@ -34,6 +34,9 @@ func (c *userDatabase) FindbyEmail(ctx context.Context, email string) (domain.Us
 	if user.Block {
 		return user, errors.New("you are blocked")
 	}
+	if !user.Verified {
+		return user, errors.New("you need to verify your mobile number")
+	}
 	return user, nil
 }
 
@@ -47,15 +50,18 @@ func (c *userDatabase) FindbyEmailorMobilenum(ctx context.Context, body utils.Ot
 	if user.Block {
 		return user, errors.New("you are blocked")
 	}
+	if !user.Verified {
+		return user, errors.New("you need to verify your mobile number")
+	}
 	return user, nil
 }
 
-func (c *userDatabase) SignUpUser(ctx context.Context, user domain.User) error {
+func (c *userDatabase) SignUpUser(ctx context.Context, user domain.User) (string, error) {
 	err := c.DB.Create(&user).Error
-	return err
+	return user.MobileNum, err
 }
 
-func (c *userDatabase) ShowDetails(ctx context.Context, id string) (utils.ResponseUsers, error) {
+func (c *userDatabase) ShowDetails(ctx context.Context, id int) (utils.ResponseUsers, error) {
 	var user utils.ResponseUsers
 	query := `SELECT first_name,last_name,email,mobile_num from users where id=?`
 	if err := c.DB.Raw(query, id).Scan(&user).Error; err != nil {
@@ -65,11 +71,19 @@ func (c *userDatabase) ShowDetails(ctx context.Context, id string) (utils.Respon
 
 }
 
-func (c *userDatabase) ShowAddress(ctx context.Context, id string) ([]utils.Address, error) {
+func (c *userDatabase) ShowAddress(ctx context.Context, id int) ([]utils.Address, error) {
 	var address []utils.Address
 	query := `select id,house_name,street,city,state,country,pincode from addresses where user_id=?`
 	if err := c.DB.Raw(query, id).Scan(&address).Error; err != nil {
 		return address, err
 	}
 	return address, nil
+}
+
+func (c *userDatabase) UpdateVerify(ctx context.Context, number string) error {
+	err := c.DB.Model(&domain.User{}).Where("mobile_num=?", number).UpdateColumn("verified", true).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

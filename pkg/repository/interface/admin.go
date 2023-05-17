@@ -10,7 +10,7 @@ import (
 type AdminRepository interface {
 	FindbyEmail(ctx context.Context, email string) (domain.Admin, error)
 	// SignUpAdmin(ctx context.Context, admin domain.Admin) error
-	ListAllUsers(ctx context.Context) ([]utils.ResponseUsers, error)
+	ListAllUsers(context.Context, utils.Pagination) ([]utils.ResponseUsers, error)
 	AccessManage(ctx context.Context, id string, access bool) error
 	ListAllCategories(ctx context.Context) ([]utils.ResponseCategory, error)
 	AddCategory(ctx context.Context, category domain.Category) error

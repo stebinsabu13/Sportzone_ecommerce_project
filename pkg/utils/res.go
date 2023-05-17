@@ -55,3 +55,10 @@ type ResponseUserDetails struct {
 	MobileNum string    `json:"mobilenum"`
 	Address   []Address `json:"address"`
 }
+
+// struct used to view the order_details
+type ResponseOrderDetails struct {
+	Product ResponseProducts
+	Address Address
+	Status  string
+}

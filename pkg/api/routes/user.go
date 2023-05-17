@@ -26,7 +26,7 @@ func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productH
 	{
 		// Auth middleware
 		home.Use(middleware.AuthorizationMiddleware("user"))
-		home.GET("/home", userHandler.HomeHandler)
+		// home.GET("/home", userHandler.HomeHandler)
 		home.POST("/logout", userHandler.LogoutHandler)
 		product := home.Group("/products")
 		{

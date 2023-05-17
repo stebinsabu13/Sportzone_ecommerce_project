@@ -38,10 +38,12 @@ func (c *adminDatabase) FindbyEmail(ctx context.Context, email string) (domain.A
 // 	return err
 // }
 
-func (c *adminDatabase) ListAllUsers(ctx context.Context) ([]utils.ResponseUsers, error) {
+func (c *adminDatabase) ListAllUsers(ctx context.Context, pagination utils.Pagination) ([]utils.ResponseUsers, error) {
 	var users []utils.ResponseUsers
-	query := `SELECT first_name,last_name,email,mobile_num,block from users`
-	result := c.DB.Raw(query).Scan(&users).Error
+	limit := pagination.Limit
+	offset := pagination.Offset
+	query := `SELECT first_name,last_name,email,mobile_num,block from users LIMIT $1 OFFSET $2`
+	result := c.DB.Raw(query, limit, offset).Scan(&users).Error
 	if result != nil {
 		return users, errors.New("failed to get all users")
 	}

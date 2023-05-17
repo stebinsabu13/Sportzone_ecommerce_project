@@ -19,10 +19,12 @@ func NewProductrepository(Db *gorm.DB) interfaces.ProductRepository {
 		DB: Db,
 	}
 }
-func (c *ProductDatabase) FindAllProducts(ctx context.Context) ([]utils.ResponseProducts, error) {
+func (c *ProductDatabase) FindAllProducts(ctx context.Context, pagination utils.Pagination) ([]utils.ResponseProducts, error) {
 	var products []utils.ResponseProducts
-	query := `SELECT p.model_name,p.price,p.image,b.brand_name FROM product_details p INNER JOIN brands b on p.brand_id=b.id`
-	result := c.DB.Raw(query).Scan(&products)
+	offset := pagination.Offset
+	limit := pagination.Limit
+	query := `SELECT p.model_name,p.price,p.image,b.brand_name FROM product_details p INNER JOIN brands b on p.brand_id=b.id where p.deleted_at is null LIMIT $1 OFFSET $2`
+	result := c.DB.Raw(query, limit, offset).Scan(&products)
 	if result.Error != nil {
 		return products, errors.New("failed to load products")
 	}

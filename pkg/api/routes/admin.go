@@ -15,7 +15,7 @@ func AdminRoutes(api *gin.RouterGroup, adminHandler *handler.AdminHandler, produ
 	home := login.Group("/")
 	{
 		home.Use(middleware.AuthorizationMiddleware("admin"))
-		home.GET("/home", adminHandler.HomeHandler)
+		// home.GET("/home", adminHandler.HomeHandler)
 		home.POST("/logout", adminHandler.LogoutHandler)
 		user := home.Group("/user")
 		{
@@ -26,14 +26,14 @@ func AdminRoutes(api *gin.RouterGroup, adminHandler *handler.AdminHandler, produ
 		{
 			category.GET("/", adminHandler.ListAllCategories)
 			category.POST("/add", adminHandler.AddCategory)
-			category.PATCH("/delete/:categoryid", adminHandler.DeleteCategory)
+			category.DELETE("/delete/:categoryid", adminHandler.DeleteCategory)
 		}
 		product := home.Group("/product")
 		{
 			product.GET("/", productHandler.FindAllProducts)
 			product.POST("/add", productHandler.AddProduct)
-			product.POST("/update", productHandler.EditProduct)
-			product.POST("/delete/:productid", productHandler.DeleteProduct)
+			product.PATCH("/update", productHandler.EditProduct)
+			product.DELETE("/delete/:productid", productHandler.DeleteProduct)
 		}
 	}
 }

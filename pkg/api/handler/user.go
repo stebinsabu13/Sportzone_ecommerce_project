@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,6 +21,7 @@ var loginOtp_user domain.User
 
 type UserHandler struct {
 	userUseCase services.UserUseCase
+	otpUseCase  services.OtpUseCase
 }
 
 // type Response struct {
@@ -28,9 +30,10 @@ type UserHandler struct {
 // 	Surname string `copier:"must"`
 // }
 
-func NewUserHandler(usecase services.UserUseCase) *UserHandler {
+func NewUserHandler(usecase services.UserUseCase, otpusecase services.OtpUseCase) *UserHandler {
 	return &UserHandler{
 		userUseCase: usecase,
+		otpUseCase:  otpusecase,
 	}
 }
 
@@ -105,38 +108,46 @@ func (cr *UserHandler) SignUp(c *gin.Context) {
 		})
 		return
 	}
-
-	_, err1 := utils.TwilioSendOTP("+91" + signUp_user.MobileNum)
+	signUp_user.Password, _ = support.HashPassword(signUp_user.Password)
+	mobile_num, err := cr.userUseCase.SignUpUser(c.Request.Context(), signUp_user)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	respSid, err1 := cr.otpUseCase.TwilioSendOTP(c.Request.Context(), mobile_num)
 	if err1 != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed generating otp",
+			"error": err1.Error(),
 		})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"Success": "Enter the otp",
+		"Success":    "Enter the otp and the responseid",
+		"responseid": respSid,
 	})
 }
 
 func (cr *UserHandler) SignupOtpverify(c *gin.Context) {
-	var otp utils.Otpverify
-	if err := c.BindJSON(&otp); err != nil {
+	var OTP utils.Otpverify
+	if err := c.BindJSON(&OTP); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": "Error binding json",
 		})
 		return
 	}
-	if err := utils.TwilioVerifyOTP("+91"+signUp_user.MobileNum, otp.Otp); err != nil {
+	session, err := cr.otpUseCase.TwilioVerifyOTP(c.Request.Context(), OTP)
+	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid Otp",
+			"error": err.Error(),
 		})
 		return
 	}
-	signUp_user.Password, _ = support.HashPassword(signUp_user.Password)
-	err := cr.userUseCase.SignUpUser(c.Request.Context(), signUp_user)
-	if err != nil {
+	err1 := cr.userUseCase.UpdateVerify(c.Request.Context(), session.MobileNum)
+	if err1 != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": "failed to add",
+			"error": err1.Error(),
 		})
 		return
 	}
@@ -144,25 +155,26 @@ func (cr *UserHandler) SignupOtpverify(c *gin.Context) {
 		"User registration": "Success",
 	})
 }
-func (cr *UserHandler) HomeHandler(c *gin.Context) {
-	email, ok := c.Get("user-email")
-	if !ok {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "Invalid user",
-		})
-	}
-	user, err := cr.userUseCase.FindbyEmail(c.Request.Context(), email.(string))
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "Invalid user",
-		})
-		return
-	}
-	// response := []Response{}
-	// copier.Copy(&response, &users)
 
-	c.JSON(http.StatusOK, user)
-}
+// func (cr *UserHandler) HomeHandler(c *gin.Context) {
+// 	email, ok := c.Get("user-email")
+// 	if !ok {
+// 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+// 			"error": "Invalid user",
+// 		})
+// 	}
+// 	user, err := cr.userUseCase.FindbyEmail(c.Request.Context(), email.(string))
+// 	if err != nil {
+// 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+// 			"error": "Invalid user",
+// 		})
+// 		return
+// 	}
+// 	// response := []Response{}
+// 	// copier.Copy(&response, &users)
+
+// 	c.JSON(http.StatusOK, user)
+// }
 
 func (cr *UserHandler) LogoutHandler(c *gin.Context) {
 	c.SetCookie("user-token", "", -1, "/", "localhost", false, true)
@@ -221,29 +233,50 @@ func (cr *UserHandler) LoginOtpverify(c *gin.Context) {
 		return
 	}
 	c.SetCookie("user-token", tokenString, int(time.Now().Add(60*time.Minute).Unix()), "/", "localhost", false, true)
+	c.Set("user-email", loginOtp_user.Email)
 	c.JSON(http.StatusOK, gin.H{
 		"Success": "Login",
 	})
 }
 
 func (cr *UserHandler) ShowUserDetails(c *gin.Context) {
-	id := c.Param("userid")
-	details, err := cr.userUseCase.ShowDetails(c.Request.Context(), id)
+	id, _ := strconv.Atoi(c.Param("userid"))
+	email, ok := c.Get("user-email")
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid user",
+		})
+	}
+	user, err := cr.userUseCase.FindbyEmail(c.Request.Context(), email.(string))
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid user",
 		})
 		return
 	}
-	address, err := cr.userUseCase.ShowAddress(c.Request.Context(), id)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
+	if user.ID == uint(id) {
+		details, err := cr.userUseCase.ShowDetails(c.Request.Context(), id)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		address, err := cr.userUseCase.ShowAddress(c.Request.Context(), id)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		profile := support.BuildProfile(details, address)
+		c.JSON(http.StatusOK, gin.H{
+			"Profile": profile,
+		})
+	} else {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Bad request to view the profile details",
 		})
 		return
 	}
-	profile := support.BuildProfile(details, address)
-	c.JSON(http.StatusOK, gin.H{
-		"Profile": profile,
-	})
 }

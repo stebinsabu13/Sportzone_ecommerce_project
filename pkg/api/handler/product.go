@@ -1,12 +1,15 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stebinsabu13/ecommerce-api/pkg/domain"
 	"github.com/stebinsabu13/ecommerce-api/pkg/support"
 	services "github.com/stebinsabu13/ecommerce-api/pkg/usecase/interface"
+	"github.com/stebinsabu13/ecommerce-api/pkg/utils"
 )
 
 type ProductHandler struct {
@@ -20,7 +23,20 @@ func NewProductHandler(service services.ProductUseCase) *ProductHandler {
 }
 
 func (cr *ProductHandler) FindAllProducts(c *gin.Context) {
-	products, err := cr.productUseCase.FindAllProducts(c.Request.Context())
+	offset, err := strconv.Atoi(c.Query("offset"))
+	limit, err1 := strconv.Atoi(c.Query("limit"))
+	err = errors.Join(err, err1)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	pagination := utils.Pagination{
+		Offset: uint(offset),
+		Limit:  uint(limit),
+	}
+	products, err := cr.productUseCase.FindAllProducts(c.Request.Context(), pagination)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),

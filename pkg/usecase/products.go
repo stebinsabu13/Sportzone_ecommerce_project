@@ -19,8 +19,8 @@ func NewProductUseCase(repo interfaces.ProductRepository) services.ProductUseCas
 	}
 }
 
-func (c *productUseCase) FindAllProducts(ctx context.Context) ([]utils.ResponseProducts, error) {
-	products, err := c.Productrepo.FindAllProducts(ctx)
+func (c *productUseCase) FindAllProducts(ctx context.Context, pagination utils.Pagination) ([]utils.ResponseProducts, error) {
+	products, err := c.Productrepo.FindAllProducts(ctx, pagination)
 	return products, err
 }
 

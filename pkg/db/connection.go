@@ -16,9 +16,11 @@ func ConnectDatabase(cfg config.Config) (*gorm.DB, error) {
 		SkipDefaultTransaction: true,
 	})
 
-	db.AutoMigrate(&domain.User{}, &domain.Address{}, &domain.OrderDetails{}, &domain.OrderItems{},
+	db.AutoMigrate(&domain.User{}, &domain.Address{},
+		&domain.OtpSession{},
 		&domain.Admin{},
 		&domain.Product{}, &domain.Category{}, &domain.Inventory{}, &domain.Coupon{}, &domain.ProductDetails{}, &domain.Discount{}, &domain.Brand{}, &domain.AvailableColour{}, &domain.AvailableSize{},
+		&domain.OrderDetails{}, &domain.OrderStatus{},
 	)
 
 	return db, dbErr

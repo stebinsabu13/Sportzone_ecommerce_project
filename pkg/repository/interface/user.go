@@ -10,8 +10,9 @@ import (
 type UserRepository interface {
 	// FindAll(ctx context.Context) ([]domain.User, error)
 	FindbyEmail(ctx context.Context, email string) (domain.User, error)
-	SignUpUser(ctx context.Context, user domain.User) error
+	UpdateVerify(context.Context, string) error
+	SignUpUser(ctx context.Context, user domain.User) (string, error)
 	FindbyEmailorMobilenum(ctx context.Context, body utils.OtpLogin) (domain.User, error)
-	ShowDetails(ctx context.Context, id string) (utils.ResponseUsers, error)
-	ShowAddress(ctx context.Context, id string) ([]utils.Address, error)
+	ShowDetails(ctx context.Context, id int) (utils.ResponseUsers, error)
+	ShowAddress(ctx context.Context, id int) ([]utils.Address, error)
 }

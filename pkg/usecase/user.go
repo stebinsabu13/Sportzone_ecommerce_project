@@ -28,9 +28,9 @@ func (c *userUseCase) FindbyEmail(ctx context.Context, email string) (domain.Use
 	return user, err
 }
 
-func (c *userUseCase) SignUpUser(ctx context.Context, user domain.User) error {
-	err := c.userRepo.SignUpUser(ctx, user)
-	return err
+func (c *userUseCase) SignUpUser(ctx context.Context, user domain.User) (string, error) {
+	mobile_num, err := c.userRepo.SignUpUser(ctx, user)
+	return mobile_num, err
 }
 
 func (c *userUseCase) FindbyEmailorMobilenum(ctx context.Context, body utils.OtpLogin) (domain.User, error) {
@@ -38,12 +38,17 @@ func (c *userUseCase) FindbyEmailorMobilenum(ctx context.Context, body utils.Otp
 	return user, err
 }
 
-func (c *userUseCase) ShowDetails(ctx context.Context, id string) (utils.ResponseUsers, error) {
+func (c *userUseCase) ShowDetails(ctx context.Context, id int) (utils.ResponseUsers, error) {
 	user, err := c.userRepo.ShowDetails(ctx, id)
 	return user, err
 }
 
-func (c *userUseCase) ShowAddress(ctx context.Context, id string) ([]utils.Address, error) {
+func (c *userUseCase) ShowAddress(ctx context.Context, id int) ([]utils.Address, error) {
 	address, err := c.userRepo.ShowAddress(ctx, id)
 	return address, err
+}
+
+func (c *userUseCase) UpdateVerify(ctx context.Context, number string) error {
+	err := c.userRepo.UpdateVerify(ctx, number)
+	return err
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -62,23 +63,23 @@ func (cr *AdminHandler) LoginHandler(c *gin.Context) {
 	})
 }
 
-func (cr AdminHandler) HomeHandler(c *gin.Context) {
-	email, ok := c.Get("admin-email")
-	if !ok {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "Unauthorized admin",
-		})
-		return
-	}
-	admin, err := cr.AdminUseCase.FindbyEmail(c.Request.Context(), email.(string))
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "Unauthorized admin",
-		})
-		return
-	}
-	c.JSON(http.StatusOK, admin)
-}
+// func (cr AdminHandler) HomeHandler(c *gin.Context) {
+// 	email, ok := c.Get("admin-email")
+// 	if !ok {
+// 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+// 			"error": "Unauthorized admin",
+// 		})
+// 		return
+// 	}
+// 	admin, err := cr.AdminUseCase.FindbyEmail(c.Request.Context(), email.(string))
+// 	if err != nil {
+// 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+// 			"error": "Unauthorized admin",
+// 		})
+// 		return
+// 	}
+// 	c.JSON(http.StatusOK, admin)
+// }
 
 func (cr *AdminHandler) LogoutHandler(c *gin.Context) {
 	c.SetCookie("admin-token", "", -1, "/", "localhost", false, true)
@@ -130,7 +131,20 @@ func (cr *AdminHandler) LogoutHandler(c *gin.Context) {
 // }
 
 func (cr *AdminHandler) ListAllUsers(c *gin.Context) {
-	users, err := cr.AdminUseCase.ListAllUsers(c.Request.Context())
+	offset, err := strconv.Atoi(c.Query("offset"))
+	limit, err1 := strconv.Atoi(c.Query("limit"))
+	err = errors.Join(err, err1)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	pagination := utils.Pagination{
+		Offset: uint(offset),
+		Limit:  uint(limit),
+	}
+	users, err := cr.AdminUseCase.ListAllUsers(c.Request.Context(), pagination)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),

@@ -26,8 +26,8 @@ func (c *adminUseCase) FindbyEmail(ctx context.Context, email string) (domain.Ad
 // 	return err
 // }
 
-func (c *adminUseCase) ListAllUsers(ctx context.Context) ([]utils.ResponseUsers, error) {
-	users, err := c.adminrepo.ListAllUsers(ctx)
+func (c *adminUseCase) ListAllUsers(ctx context.Context, pagination utils.Pagination) ([]utils.ResponseUsers, error) {
+	users, err := c.adminrepo.ListAllUsers(ctx, pagination)
 	return users, err
 }
 
