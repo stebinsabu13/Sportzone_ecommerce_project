@@ -59,8 +59,8 @@ func (c *productUseCase) AddProduct(ctx context.Context, product domain.ProductD
 	return err
 }
 
-func (c *productUseCase) EditProduct(ctx context.Context, product domain.ProductDetails) error {
-	err := c.Productrepo.EditProduct(ctx, product)
+func (c *productUseCase) EditProduct(ctx context.Context, product domain.ProductDetails, id string) error {
+	err := c.Productrepo.EditProduct(ctx, product, id)
 	return err
 }
 

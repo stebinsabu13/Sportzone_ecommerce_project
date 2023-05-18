@@ -23,11 +23,14 @@ func NewUserUseCase(repo interfaces.UserRepository) services.UserUseCase {
 //		users, err := c.userRepo.FindAll(ctx)
 //		return users, err
 //	}
+
 func (c *userUseCase) FindbyEmail(ctx context.Context, email string) (domain.User, error) {
 	user, err := c.userRepo.FindbyEmail(ctx, email)
 	return user, err
 }
-
+func (c *userUseCase) FindbyUserID(ctx context.Context, id uint) (domain.User, error) {
+	return c.userRepo.FindbyUserID(ctx, id)
+}
 func (c *userUseCase) SignUpUser(ctx context.Context, user domain.User) (string, error) {
 	mobile_num, err := c.userRepo.SignUpUser(ctx, user)
 	return mobile_num, err
@@ -51,4 +54,13 @@ func (c *userUseCase) ShowAddress(ctx context.Context, id int) ([]utils.Address,
 func (c *userUseCase) UpdateVerify(ctx context.Context, number string) error {
 	err := c.userRepo.UpdateVerify(ctx, number)
 	return err
+}
+
+func (c *userUseCase) AddAddress(ctx context.Context, address domain.Address) error {
+	err := c.userRepo.AddAddress(ctx, address)
+	return err
+}
+
+func (c *userUseCase) EditProfile(ctx context.Context, profile utils.EditProfileReq, id uint) error {
+	return c.userRepo.EditProfile(ctx, profile, id)
 }

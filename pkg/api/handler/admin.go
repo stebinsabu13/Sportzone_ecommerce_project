@@ -50,7 +50,7 @@ func (cr *AdminHandler) LoginHandler(c *gin.Context) {
 		})
 		return
 	}
-	tokenString, err := auth.GenerateJWT(admin.Email)
+	tokenString, err := auth.GenerateJWT(admin.ID)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": "Not able to generate token, login again",
@@ -58,6 +58,7 @@ func (cr *AdminHandler) LoginHandler(c *gin.Context) {
 		return
 	}
 	c.SetCookie("admin-token", tokenString, int(time.Now().Add(60*time.Minute).Unix()), "/", "localhost", false, true)
+	c.Set("admin-id", admin.ID)
 	c.JSON(http.StatusOK, gin.H{
 		"Success": "Admin Login",
 	})
@@ -131,7 +132,7 @@ func (cr *AdminHandler) LogoutHandler(c *gin.Context) {
 // }
 
 func (cr *AdminHandler) ListAllUsers(c *gin.Context) {
-	offset, err := strconv.Atoi(c.Query("offset"))
+	page, err := strconv.Atoi(c.Query("page"))
 	limit, err1 := strconv.Atoi(c.Query("limit"))
 	err = errors.Join(err, err1)
 	if err != nil {
@@ -140,6 +141,7 @@ func (cr *AdminHandler) ListAllUsers(c *gin.Context) {
 		})
 		return
 	}
+	offset := (page - 1) * limit
 	pagination := utils.Pagination{
 		Offset: uint(offset),
 		Limit:  uint(limit),

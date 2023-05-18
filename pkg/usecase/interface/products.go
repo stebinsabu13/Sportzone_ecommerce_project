@@ -16,6 +16,6 @@ type ProductUseCase interface {
 	FindProductDesc(ctx context.Context, id string) (utils.ResponseProducts, error)
 	FindProductDiscount(ctx context.Context, id string) (uint, error)
 	AddProduct(ctx context.Context, product domain.ProductDetails) error
-	EditProduct(ctx context.Context, product domain.ProductDetails) error
+	EditProduct(ctx context.Context, product domain.ProductDetails, id string) error
 	DeleteProduct(ctx context.Context, id string) error
 }

@@ -23,7 +23,7 @@ func NewProductHandler(service services.ProductUseCase) *ProductHandler {
 }
 
 func (cr *ProductHandler) FindAllProducts(c *gin.Context) {
-	offset, err := strconv.Atoi(c.Query("offset"))
+	page, err := strconv.Atoi(c.Query("page"))
 	limit, err1 := strconv.Atoi(c.Query("limit"))
 	err = errors.Join(err, err1)
 	if err != nil {
@@ -32,6 +32,7 @@ func (cr *ProductHandler) FindAllProducts(c *gin.Context) {
 		})
 		return
 	}
+	offset := (page - 1) * limit
 	pagination := utils.Pagination{
 		Offset: uint(offset),
 		Limit:  uint(limit),
@@ -105,6 +106,7 @@ func (cr *ProductHandler) AddProduct(c *gin.Context) {
 }
 
 func (cr ProductHandler) EditProduct(c *gin.Context) {
+	id := c.Param("productid")
 	var product domain.ProductDetails
 	if err := c.BindJSON(&product); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
@@ -112,7 +114,7 @@ func (cr ProductHandler) EditProduct(c *gin.Context) {
 		})
 		return
 	}
-	err := cr.productUseCase.EditProduct(c.Request.Context(), product)
+	err := cr.productUseCase.EditProduct(c.Request.Context(), product, id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),

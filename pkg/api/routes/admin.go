@@ -32,7 +32,7 @@ func AdminRoutes(api *gin.RouterGroup, adminHandler *handler.AdminHandler, produ
 		{
 			product.GET("/", productHandler.FindAllProducts)
 			product.POST("/add", productHandler.AddProduct)
-			product.PATCH("/update", productHandler.EditProduct)
+			product.PATCH("/update/:productid", productHandler.EditProduct)
 			product.DELETE("/delete/:productid", productHandler.DeleteProduct)
 		}
 	}

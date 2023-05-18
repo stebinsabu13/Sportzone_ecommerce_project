@@ -23,7 +23,7 @@ func AuthorizationMiddleware(role string) gin.HandlerFunc {
 			})
 			return
 		}
-		c.Set(role+"-email", claims.Email)
+		c.Set(role+"-id", claims.ID)
 		c.Next()
 	}
 }

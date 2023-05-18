@@ -133,8 +133,8 @@ func (c *ProductDatabase) AddProduct(ctx context.Context, product domain.Product
 	return nil
 }
 
-func (c *ProductDatabase) EditProduct(ctx context.Context, product domain.ProductDetails) error {
-	result := c.DB.Save(&product).Error
+func (c *ProductDatabase) EditProduct(ctx context.Context, product domain.ProductDetails, id string) error {
+	result := c.DB.Where("id=?", id).Save(&product).Error
 	if result != nil {
 		return errors.New("failed to update product")
 	}

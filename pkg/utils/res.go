@@ -58,7 +58,16 @@ type ResponseUserDetails struct {
 
 // struct used to view the order_details
 type ResponseOrderDetails struct {
-	Product ResponseProducts
-	Address Address
-	Status  string
+	Image     string `json:"image"`
+	ModelName string `json:"modelname"`
+	Price     uint   `json:"price"`
+	BrandName string `json:"brandname"`
+	Quantity  uint   `json:"quantity"`
+	HouseName string `json:"housename"`
+	Street    string `json:"street"`
+	City      string `json:"city"`
+	State     string `json:"state"`
+	Country   string `json:"country"`
+	Pincode   string `json:"pincode"`
+	Status    string `json:"status"`
 }

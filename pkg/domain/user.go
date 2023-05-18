@@ -24,7 +24,7 @@ type Address struct {
 	Country   string `json:"country" binding:"required" gorm:"not null"`
 	Pincode   string `json:"pincode" binding:"required" gorm:"not null"`
 	UserID    uint   `json:"userid"`
-	User      User   `gorm:"foreignkey:UserID"`
+	// User      User   `gorm:"foreignkey:UserID"`
 }
 
 // type Payment struct {

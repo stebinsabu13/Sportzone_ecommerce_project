@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,8 +19,9 @@ var signUp_user domain.User
 var loginOtp_user domain.User
 
 type UserHandler struct {
-	userUseCase services.UserUseCase
-	otpUseCase  services.OtpUseCase
+	userUseCase  services.UserUseCase
+	otpUseCase   services.OtpUseCase
+	orderUseCase services.OrderUseCase
 }
 
 // type Response struct {
@@ -30,19 +30,15 @@ type UserHandler struct {
 // 	Surname string `copier:"must"`
 // }
 
-func NewUserHandler(usecase services.UserUseCase, otpusecase services.OtpUseCase) *UserHandler {
+func NewUserHandler(usecase services.UserUseCase, otpusecase services.OtpUseCase, orderusecase services.OrderUseCase) *UserHandler {
 	return &UserHandler{
-		userUseCase: usecase,
-		otpUseCase:  otpusecase,
+		userUseCase:  usecase,
+		otpUseCase:   otpusecase,
+		orderUseCase: orderusecase,
 	}
 }
 
 func (cr *UserHandler) LoginHandler(c *gin.Context) {
-	_, err1 := c.Cookie("user-token")
-	if err1 == nil {
-		c.Redirect(http.StatusFound, "/user/home")
-		return
-	}
 	// implement login logic here
 
 	var body utils.BodyLogin
@@ -67,7 +63,7 @@ func (cr *UserHandler) LoginHandler(c *gin.Context) {
 		})
 		return
 	}
-	tokenString, err1 := auth.GenerateJWT(user.Email)
+	tokenString, err1 := auth.GenerateJWT(user.ID)
 	if err1 != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": "error generationg token",
@@ -75,9 +71,8 @@ func (cr *UserHandler) LoginHandler(c *gin.Context) {
 		return
 	}
 	c.SetCookie("user-token", tokenString, int(time.Now().Add(60*time.Minute).Unix()), "/", "localhost", false, true)
-	c.Set("user-email", user.Email)
 	c.JSON(http.StatusOK, gin.H{
-		"Success": "Login",
+		"Success": user,
 	})
 }
 
@@ -218,14 +213,13 @@ func (cr *UserHandler) LoginOtpverify(c *gin.Context) {
 		})
 		return
 	}
-	fmt.Println(loginOtp_user.MobileNum)
 	if err := utils.TwilioVerifyOTP("+91"+loginOtp_user.MobileNum, otp.Otp); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid Otp",
 		})
 		return
 	}
-	tokenString, err1 := auth.GenerateJWT(loginOtp_user.Email)
+	tokenString, err1 := auth.GenerateJWT(1)
 	if err1 != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": "error generationg token",
@@ -233,50 +227,129 @@ func (cr *UserHandler) LoginOtpverify(c *gin.Context) {
 		return
 	}
 	c.SetCookie("user-token", tokenString, int(time.Now().Add(60*time.Minute).Unix()), "/", "localhost", false, true)
-	c.Set("user-email", loginOtp_user.Email)
 	c.JSON(http.StatusOK, gin.H{
 		"Success": "Login",
 	})
 }
 
 func (cr *UserHandler) ShowUserDetails(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("userid"))
-	email, ok := c.Get("user-email")
+	id, ok := c.Get("user-id")
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Not ok",
+		})
+		return
+	}
+	fmt.Println(id)
+	user, err := cr.userUseCase.FindbyUserID(c.Request.Context(), id.(uint))
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	details, err := cr.userUseCase.ShowDetails(c.Request.Context(), int(user.ID))
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	address, err := cr.userUseCase.ShowAddress(c.Request.Context(), int(user.ID))
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	profile := support.BuildProfile(details, address)
+	c.JSON(http.StatusOK, gin.H{
+		"Profile": profile,
+	})
+}
+
+func (cr *UserHandler) ShowOrders(c *gin.Context) {
+	id, ok := c.Get("user-id")
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"error": "Invalid user",
 		})
+		return
 	}
-	user, err := cr.userUseCase.FindbyEmail(c.Request.Context(), email.(string))
+	user, err := cr.userUseCase.FindbyUserID(c.Request.Context(), id.(uint))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"error": "Invalid user",
 		})
 		return
 	}
-	if user.ID == uint(id) {
-		details, err := cr.userUseCase.ShowDetails(c.Request.Context(), id)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-		address, err := cr.userUseCase.ShowAddress(c.Request.Context(), id)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-		profile := support.BuildProfile(details, address)
-		c.JSON(http.StatusOK, gin.H{
-			"Profile": profile,
-		})
-	} else {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "Bad request to view the profile details",
+	orderDetails, err := cr.orderUseCase.OrderDetails(c.Request.Context(), int(user.ID))
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
+	c.JSON(http.StatusOK, gin.H{
+		"ORDER DETAILS": orderDetails,
+	})
+}
+
+func (cr *UserHandler) AddAddress(c *gin.Context) {
+	id, ok := c.Get("user-id")
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid user",
+		})
+		return
+	}
+	user, err := cr.userUseCase.FindbyUserID(c.Request.Context(), id.(uint))
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid user",
+		})
+		return
+	}
+	var address domain.Address
+	if err := c.BindJSON(&address); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	address.UserID = user.ID
+	if err := cr.userUseCase.AddAddress(c.Request.Context(), address); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success": "Address added",
+	})
+}
+func (cr *UserHandler) UpdateProfile(c *gin.Context) {
+	var profile utils.EditProfileReq
+	if err := c.BindJSON(&profile); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	id, ok := c.Get("user-id")
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid user",
+		})
+		return
+	}
+	if err := cr.userUseCase.EditProfile(c.Request.Context(), profile, id.(uint)); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success": "Profile updated",
+	})
 }

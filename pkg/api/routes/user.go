@@ -35,7 +35,13 @@ func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productH
 		}
 		profile := home.Group("/profile")
 		{
-			profile.GET("/:userid", userHandler.ShowUserDetails)
+			profile.GET("/", userHandler.ShowUserDetails)
+			profile.POST("/add/address", userHandler.AddAddress)
+			profile.PATCH("/edit/details", userHandler.UpdateProfile)
+		}
+		orders := home.Group("/orders")
+		{
+			orders.GET("/", userHandler.ShowOrders)
 		}
 	}
 }
