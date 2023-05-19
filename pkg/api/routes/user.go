@@ -15,7 +15,11 @@ func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productH
 		login.POST("/login", userHandler.LoginHandler)
 		login.POST("/login/otp", userHandler.LoginOtp)
 		login.POST("/login/otp/verify", userHandler.LoginOtpverify)
-
+	}
+	forgotpassword := api.Group("/user/forgot/password")
+	{
+		forgotpassword.POST("/", userHandler.ForgotPassword)
+		forgotpassword.PATCH("/otp/verify", userHandler.ForgotPasswordOtpverify)
 	}
 	signup := api.Group("/user")
 	{
@@ -31,7 +35,7 @@ func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productH
 		product := home.Group("/products")
 		{
 			product.GET("/", productHandler.FindAllProducts)
-			product.GET("/:id", productHandler.FindProductById)
+			product.GET("/:id", productHandler.FindDetailsProductById)
 		}
 		profile := home.Group("/profile")
 		{

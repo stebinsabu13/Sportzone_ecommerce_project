@@ -77,7 +77,7 @@ func (c *userDatabase) SignUpUser(ctx context.Context, user domain.User) (string
 	return user.MobileNum, nil
 }
 
-func (c *userDatabase) ShowDetails(ctx context.Context, id int) (utils.ResponseUsers, error) {
+func (c *userDatabase) ShowDetails(ctx context.Context, id uint) (utils.ResponseUsers, error) {
 	var user utils.ResponseUsers
 	query := `SELECT first_name,last_name,email,mobile_num from users where id=?`
 	if err := c.DB.Raw(query, id).Scan(&user).Error; err != nil {
@@ -87,7 +87,7 @@ func (c *userDatabase) ShowDetails(ctx context.Context, id int) (utils.ResponseU
 
 }
 
-func (c *userDatabase) ShowAddress(ctx context.Context, id int) ([]utils.Address, error) {
+func (c *userDatabase) ShowAddress(ctx context.Context, id uint) ([]utils.Address, error) {
 	var address []utils.Address
 	query := `select id,house_name,street,city,state,country,pincode from addresses where user_id=?`
 	if err := c.DB.Raw(query, id).Scan(&address).Error; err != nil {
@@ -116,6 +116,18 @@ func (c *userDatabase) EditProfile(ctx context.Context, profile utils.EditProfil
 	result := c.DB.Model(&domain.User{}).Where("id=?", id).Updates(domain.User{FirstName: profile.FirstName, LastName: profile.LastName, Email: profile.Email})
 	if result.RowsAffected == 0 {
 		return errors.New("no row updated")
+	} else if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (c *userDatabase) ChangePassword(ctx context.Context, newpassword string, mobile_num string) error {
+	result := c.DB.Model(&domain.User{}).Where("mobile_num=?", mobile_num).UpdateColumn("password", newpassword)
+	if result.RowsAffected == 0 {
+		return errors.New("no row updated")
+	} else if result.Error != nil {
+		return result.Error
 	}
 	return nil
 }

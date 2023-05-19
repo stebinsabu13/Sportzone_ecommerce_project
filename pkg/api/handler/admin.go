@@ -202,7 +202,7 @@ func (cr *AdminHandler) AddCategory(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"Success": "Adding category",
+		"Success": "Category added",
 	})
 }
 
@@ -215,6 +215,6 @@ func (cr *AdminHandler) DeleteCategory(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"Success": "Deleting category",
+		"Success": "Category deleted",
 	})
 }

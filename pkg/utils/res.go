@@ -22,20 +22,19 @@ type Address struct {
 type ResponseProducts struct {
 	Image     string `json:"image"`
 	ModelName string `json:"modelname"`
-	Price     uint   `json:"price"`
 	BrandName string `json:"brandname"`
 }
 
 // struct used to view a particular product details
 type ResponseProductDetails struct {
-	Image              string    `json:"image"`
-	ModelName          string    `json:"modelname"`
-	Price              uint      `json:"price"`
-	BrandName          string    `json:"brandname"`
-	DiscountPercentage string    `json:"discountpercentage"`
-	AvailableColours   []Colours `json:"availablecolours"`
-	AvailableSizes     []Size    `json:"availablesizes"`
-	PayableAmount      uint      `json:"payableamount"`
+	Image      string `json:"image"`
+	ModelName  string `json:"modelname"`
+	Price      uint   `json:"price"`
+	BrandName  string `json:"brandname"`
+	Stock      uint   `json:"stock"`
+	Percentage uint   `json:"percentage"`
+	Colour     string `json:"colour"`
+	Size       string `json:"size"`
 }
 
 // struct used to list all users

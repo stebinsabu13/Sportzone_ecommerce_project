@@ -17,7 +17,7 @@ func NewOrderUseCase(repo interfaces.OrderRepository) services.OrderUseCase {
 		orderrepo: repo,
 	}
 }
-func (c *orderUseCase) OrderDetails(ctx context.Context, id int) ([]utils.ResponseOrderDetails, error) {
+func (c *orderUseCase) OrderDetails(ctx context.Context, id uint) ([]utils.ResponseOrderDetails, error) {
 	orderDetails, err := c.orderrepo.OrderDetails(ctx, id)
 	return orderDetails, err
 }

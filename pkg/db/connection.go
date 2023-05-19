@@ -19,7 +19,7 @@ func ConnectDatabase(cfg config.Config) (*gorm.DB, error) {
 	db.AutoMigrate(&domain.User{}, &domain.Address{},
 		&domain.OtpSession{},
 		&domain.Admin{},
-		&domain.Product{}, &domain.Category{}, &domain.Inventory{}, &domain.Coupon{}, &domain.ProductDetails{}, &domain.Discount{}, &domain.Brand{}, &domain.AvailableColour{}, &domain.AvailableSize{},
+		&domain.Category{}, &domain.Product{}, &domain.Brand{}, &domain.ProductDetails{}, &domain.Coupon{}, &domain.Discount{}, &domain.AvailableColour{}, &domain.AvailableSize{},
 		&domain.OrderDetails{}, &domain.OrderStatus{},
 	)
 

@@ -7,5 +7,5 @@ import (
 )
 
 type OrderUseCase interface {
-	OrderDetails(ctx context.Context, id int) ([]utils.ResponseOrderDetails, error)
+	OrderDetails(ctx context.Context, id uint) ([]utils.ResponseOrderDetails, error)
 }

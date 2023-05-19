@@ -6,13 +6,14 @@ type BodyLogin struct {
 }
 
 type Otpverify struct {
-	Otp   string `json:"otp" binding:"required"`
-	OtpID string `json:"otpid" binding:"required"`
+	Otp         string `json:"otp" binding:"required"`
+	OtpID       string `json:"otpid"`
+	NewPassword string `json:"newpassword"`
 }
 
 type OtpLogin struct {
-	Email     string
-	MobileNum string
+	Email     string `json:"email"`
+	MobileNum string `json:"mobilenum"`
 }
 
 type Pagination struct {
@@ -25,3 +26,7 @@ type EditProfileReq struct {
 	LastName  string `json:"lastname" binding:"required"`
 	Email     string `json:"email" binding:"required,email"`
 }
+
+// type  struct {
+
+// }

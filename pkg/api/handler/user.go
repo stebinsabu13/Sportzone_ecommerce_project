@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -16,19 +15,12 @@ import (
 )
 
 var signUp_user domain.User
-var loginOtp_user domain.User
 
 type UserHandler struct {
 	userUseCase  services.UserUseCase
 	otpUseCase   services.OtpUseCase
 	orderUseCase services.OrderUseCase
 }
-
-// type Response struct {
-// 	ID      uint   `copier:"must"`
-// 	Name    string `copier:"must"`
-// 	Surname string `copier:"must"`
-// }
 
 func NewUserHandler(usecase services.UserUseCase, otpusecase services.OtpUseCase, orderusecase services.OrderUseCase) *UserHandler {
 	return &UserHandler{
@@ -186,22 +178,23 @@ func (cr *UserHandler) LoginOtp(c *gin.Context) {
 		})
 		return
 	}
-	loginOtp_user, err := cr.userUseCase.FindbyEmailorMobilenum(c.Request.Context(), body)
+	user, err := cr.userUseCase.FindbyEmailorMobilenum(c.Request.Context(), body)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	_, err1 := utils.TwilioSendOTP("+91" + loginOtp_user.MobileNum)
+	respSid, err1 := cr.otpUseCase.TwilioSendOTP(c.Request.Context(), "+91"+user.MobileNum)
 	if err1 != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed generating otp",
+			"error": err1.Error(),
 		})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"Success": "Enter the otp",
+		"Success":     "Enter the otp and response id",
+		"response id": respSid,
 	})
 }
 
@@ -213,22 +206,30 @@ func (cr *UserHandler) LoginOtpverify(c *gin.Context) {
 		})
 		return
 	}
-	if err := utils.TwilioVerifyOTP("+91"+loginOtp_user.MobileNum, otp.Otp); err != nil {
+	session, err := cr.otpUseCase.TwilioVerifyOTP(c.Request.Context(), otp)
+	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid Otp",
+			"error": err.Error(),
 		})
 		return
 	}
-	tokenString, err1 := auth.GenerateJWT(1)
+	user, err2 := cr.userUseCase.FindbyEmailorMobilenum(c.Request.Context(), utils.OtpLogin{Email: "", MobileNum: session.MobileNum})
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err2.Error(),
+		})
+		return
+	}
+	tokenString, err1 := auth.GenerateJWT(user.ID)
 	if err1 != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": "error generationg token",
+			"error": err1.Error(),
 		})
 		return
 	}
 	c.SetCookie("user-token", tokenString, int(time.Now().Add(60*time.Minute).Unix()), "/", "localhost", false, true)
 	c.JSON(http.StatusOK, gin.H{
-		"Success": "Login",
+		"Success": user,
 	})
 }
 
@@ -240,22 +241,14 @@ func (cr *UserHandler) ShowUserDetails(c *gin.Context) {
 		})
 		return
 	}
-	fmt.Println(id)
-	user, err := cr.userUseCase.FindbyUserID(c.Request.Context(), id.(uint))
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-	details, err := cr.userUseCase.ShowDetails(c.Request.Context(), int(user.ID))
+	details, err := cr.userUseCase.ShowDetails(c.Request.Context(), id.(uint))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	address, err := cr.userUseCase.ShowAddress(c.Request.Context(), int(user.ID))
+	address, err := cr.userUseCase.ShowAddress(c.Request.Context(), id.(uint))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -272,18 +265,11 @@ func (cr *UserHandler) ShowOrders(c *gin.Context) {
 	id, ok := c.Get("user-id")
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "Invalid user",
+			"error": "Not ok",
 		})
 		return
 	}
-	user, err := cr.userUseCase.FindbyUserID(c.Request.Context(), id.(uint))
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "Invalid user",
-		})
-		return
-	}
-	orderDetails, err := cr.orderUseCase.OrderDetails(c.Request.Context(), int(user.ID))
+	orderDetails, err := cr.orderUseCase.OrderDetails(c.Request.Context(), id.(uint))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -299,14 +285,7 @@ func (cr *UserHandler) AddAddress(c *gin.Context) {
 	id, ok := c.Get("user-id")
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "Invalid user",
-		})
-		return
-	}
-	user, err := cr.userUseCase.FindbyUserID(c.Request.Context(), id.(uint))
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "Invalid user",
+			"error": "Not ok",
 		})
 		return
 	}
@@ -317,7 +296,7 @@ func (cr *UserHandler) AddAddress(c *gin.Context) {
 		})
 		return
 	}
-	address.UserID = user.ID
+	address.UserID = id.(uint)
 	if err := cr.userUseCase.AddAddress(c.Request.Context(), address); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -339,7 +318,7 @@ func (cr *UserHandler) UpdateProfile(c *gin.Context) {
 	id, ok := c.Get("user-id")
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "Invalid user",
+			"error": "Not ok",
 		})
 		return
 	}
@@ -351,5 +330,66 @@ func (cr *UserHandler) UpdateProfile(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"Success": "Profile updated",
+	})
+}
+
+func (cr *UserHandler) ForgotPassword(c *gin.Context) {
+	var bodydetail utils.OtpLogin
+	if err := c.BindJSON(&bodydetail); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	user, err := cr.userUseCase.FindbyEmailorMobilenum(c.Request.Context(), bodydetail)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	respSid, err := cr.otpUseCase.TwilioSendOTP(c.Request.Context(), user.MobileNum)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success":    "Enter the otp,responseid and the new password",
+		"responseid": respSid,
+	})
+}
+
+func (cr *UserHandler) ForgotPasswordOtpverify(c *gin.Context) {
+	var changepassbody utils.Otpverify
+	if err := c.BindJSON(&changepassbody); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	session, err := cr.otpUseCase.TwilioVerifyOTP(c.Request.Context(), changepassbody)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	newpassword, err1 := support.HashPassword(changepassbody.NewPassword)
+	if err1 != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err1.Error(),
+		})
+		return
+	}
+	if err := cr.userUseCase.ChangePassword(c.Request.Context(), newpassword, session.MobileNum); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err1.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success": "Password updated",
 	})
 }

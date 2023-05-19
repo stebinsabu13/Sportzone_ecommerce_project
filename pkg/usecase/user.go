@@ -41,12 +41,12 @@ func (c *userUseCase) FindbyEmailorMobilenum(ctx context.Context, body utils.Otp
 	return user, err
 }
 
-func (c *userUseCase) ShowDetails(ctx context.Context, id int) (utils.ResponseUsers, error) {
+func (c *userUseCase) ShowDetails(ctx context.Context, id uint) (utils.ResponseUsers, error) {
 	user, err := c.userRepo.ShowDetails(ctx, id)
 	return user, err
 }
 
-func (c *userUseCase) ShowAddress(ctx context.Context, id int) ([]utils.Address, error) {
+func (c *userUseCase) ShowAddress(ctx context.Context, id uint) ([]utils.Address, error) {
 	address, err := c.userRepo.ShowAddress(ctx, id)
 	return address, err
 }
@@ -63,4 +63,7 @@ func (c *userUseCase) AddAddress(ctx context.Context, address domain.Address) er
 
 func (c *userUseCase) EditProfile(ctx context.Context, profile utils.EditProfileReq, id uint) error {
 	return c.userRepo.EditProfile(ctx, profile, id)
+}
+func (c *userUseCase) ChangePassword(ctx context.Context, newpassword string, mobile_num string) error {
+	return c.userRepo.ChangePassword(ctx, newpassword, mobile_num)
 }
