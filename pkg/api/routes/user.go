@@ -6,7 +6,7 @@ import (
 	"github.com/stebinsabu13/ecommerce-api/pkg/api/middleware"
 )
 
-func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productHandler *handler.ProductHandler, cartHandler *handler.CartHandler) {
+func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productHandler *handler.ProductHandler, cartHandler *handler.CartHandler, orderHandler *handler.OrderHandler) {
 
 	// login
 	login := api.Group("/user")
@@ -52,6 +52,10 @@ func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productH
 			cart.GET("/", cartHandler.ViewCart)
 			cart.PUT("/add", cartHandler.AddtoCart)
 			cart.PUT("/remove", cartHandler.RemovefromCart)
+		}
+		checkout := home.Group("/checkout")
+		{
+			checkout.POST("/add", orderHandler.AddtoOrders)
 		}
 	}
 }

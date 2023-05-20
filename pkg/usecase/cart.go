@@ -37,25 +37,29 @@ func (c *cartUseCase) AdditemtoCart(id string, userid uint) error {
 	if err1 != nil {
 		return err1
 	}
-	exsistitem, err2 := c.cartRepo.FindProductExsist(id, cart.ID)
-	if err2 != nil {
-		return err2
-	}
-	if exsistitem.ID != 0 {
-		exsistitem.Quantity += 1
-		exsistitem.Total = exsistitem.Quantity * productdetail.Price
-		if err := c.cartRepo.UpdateCartitem(exsistitem); err != nil {
-			return err
-		}
+	if productdetail.Stock <= 0 {
+		return errors.New("out of stock")
 	} else {
-		item := domain.CartItem{
-			CartID:          cart.ID,
-			ProductDetailID: productdetail.ID,
-			Quantity:        1,
-			Total:           productdetail.Price,
+		exsistitem, err2 := c.cartRepo.FindProductExsist(id, cart.ID)
+		if err2 != nil {
+			return err2
 		}
-		if err := c.cartRepo.AddNewitem(item); err != nil {
-			return err
+		if exsistitem.ID != 0 {
+			exsistitem.Quantity += 1
+			exsistitem.Total = exsistitem.Quantity * productdetail.Price
+			if err := c.cartRepo.UpdateCartitem(exsistitem); err != nil {
+				return err
+			}
+		} else {
+			item := domain.CartItem{
+				CartID:          cart.ID,
+				ProductDetailID: productdetail.ID,
+				Quantity:        1,
+				Total:           productdetail.Price,
+			}
+			if err := c.cartRepo.AddNewitem(item); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

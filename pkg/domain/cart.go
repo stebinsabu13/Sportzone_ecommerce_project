@@ -7,7 +7,7 @@ type Cart struct {
 }
 
 type CartItem struct {
-	ID              uint `josn:"id" gorm:"primarykey;auto_increment"`
+	ID              uint `json:"id" gorm:"primarykey;auto_increment"`
 	CartID          uint `json:"cartid" gorm:"not null"`
 	ProductDetailID uint `json:"productdetailid" gorm:"not null"`
 	Quantity        uint `json:"quantity" gorm:"not null"`

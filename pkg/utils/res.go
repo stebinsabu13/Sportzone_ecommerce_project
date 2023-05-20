@@ -73,3 +73,9 @@ type ResViewCart struct {
 	Quantity  uint   `json:"quantity"`
 	Total     uint   `json:"total"`
 }
+
+type ResCartItems struct {
+	CartID          uint `json:"cartid"`
+	ProductDetailID uint `json:"productdetailid"`
+	Quantity        uint `json:"quantity"`
+}

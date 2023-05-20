@@ -20,7 +20,8 @@ func ConnectDatabase(cfg config.Config) (*gorm.DB, error) {
 		&domain.OtpSession{},
 		&domain.Admin{},
 		&domain.Category{}, &domain.Product{}, &domain.Brand{}, &domain.ProductDetails{}, &domain.Coupon{}, &domain.Discount{}, &domain.AvailableColour{}, &domain.AvailableSize{},
-		&domain.OrderDetails{}, &domain.OrderStatus{},
+		&domain.Order{}, &domain.OrderDetails{}, &domain.OrderStatus{},
+		&domain.PaymentMode{},
 	)
 
 	return db, dbErr

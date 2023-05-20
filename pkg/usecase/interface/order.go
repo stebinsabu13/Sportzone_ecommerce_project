@@ -8,4 +8,5 @@ import (
 
 type OrderUseCase interface {
 	OrderDetails(ctx context.Context, id uint) ([]utils.ResponseOrderDetails, error)
+	AddtoOrders(uint, uint, uint) error
 }

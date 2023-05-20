@@ -27,11 +27,7 @@ type Address struct {
 	// User      User   `gorm:"foreignkey:UserID"`
 }
 
-// type Payment struct {
-// 	gorm.Model
-// 	PayMode string    `json:"paymode" gorm:"not null"`
-// 	ACNO    string    `json:"acno" gorm:"not null;uniqueIndex"`
-// 	Expiry  time.Time `json:"expiry" gorm:"not null"`
-// 	UserID  uint      `json:"userid"`
-// 	User    User      `gorm:"foreignkey:UserID"`
-// }
+type PaymentMode struct {
+	ID   uint   `json:"id" gorm:"primarykey;auto_increment"`
+	Mode string `json:"mode" gorm:"not null"`
+}

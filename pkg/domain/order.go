@@ -1,20 +1,24 @@
 package domain
 
-import (
-	"gorm.io/gorm"
-)
+import "time"
+
+type Order struct {
+	ID         uint      `json:"id" gorm:"primarykey;auto_increment"`
+	UserID     uint      `json:"userid" gorm:"not null"`
+	PlacedDate time.Time `json:"placeddate" gorm:"not null"`
+	AddressID  uint      `json:"addressid" gorm:"not null"`
+	PaymentID  uint      `json:"paymentid" gorm:"not null"`
+	GrandTotal uint      `json:"grandtotal" gorm:"not null"`
+}
 
 type OrderDetails struct {
-	gorm.Model
-	UserID           uint           `json:"userid"`
-	User             User           `gorm:"foreignkey:UserID"`
-	AddressID        uint           `json:"addressid"`
-	Address          Address        `gorm:"foreignkey:AddressID"`
-	ProductDetailsID uint           `json:"productdetailsid"`
-	ProductDetails   ProductDetails `gorm:"foreignkey:ProductDetailsID"`
-	Quantity         uint           `json:"quantity" gorm:"not null"`
-	OrderStatusID    uint           `json:"orderstatusid"`
-	OrderStatus      OrderStatus    `gorm:"foreignkey:StatusID"`
+	ID              uint      `json:"id" gorm:"primarykey;auto_increment"`
+	OrderID         uint      `json:"orderid" gorm:"not null"`
+	OrderStatusID   uint      `json:"orderstatusid" gorm:"not null"`
+	DeliveredDate   time.Time `json:"delivereddate"`
+	CancelledDate   time.Time `json:"cancelleddate"`
+	ProductDetailID uint      `json:"productdetailsid"`
+	Quantity        uint      `json:"quantity" gorm:"not null"`
 }
 
 type OrderStatus struct {
