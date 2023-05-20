@@ -70,8 +70,19 @@ func (c *userDatabase) FindbyEmailorMobilenum(ctx context.Context, body utils.Ot
 }
 
 func (c *userDatabase) SignUpUser(ctx context.Context, user domain.User) (string, error) {
-	err := c.DB.Create(&user).Error
+	tx := c.DB.Begin()
+	err := tx.Create(&user).Error
 	if err != nil {
+		tx.Rollback()
+		return user.MobileNum, err
+	}
+	query := `insert into carts(user_id)values($1)`
+	if err := tx.Exec(query, user.ID).Error; err != nil {
+		tx.Rollback()
+		return user.MobileNum, err
+	}
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
 		return user.MobileNum, err
 	}
 	return user.MobileNum, nil

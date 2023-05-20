@@ -15,9 +15,9 @@ import (
 
 func InitializeAPI(cfg config.Config) (*http.ServerHTTP, error) {
 	wire.Build(db.ConnectDatabase,
-		repository.NewUserRepository, repository.NewAdminRepository, repository.NewProductrepository, repository.NewOtpRepository, repository.NewOrderRepository,
-		usecase.NewUserUseCase, usecase.NewAdminUseCase, usecase.NewProductUseCase, usecase.NewOtpUseCase, usecase.NewOrderUseCase,
-		handler.NewUserHandler, handler.NewAdminHandler, handler.NewProductHandler,
+		repository.NewUserRepository, repository.NewAdminRepository, repository.NewProductrepository, repository.NewOtpRepository, repository.NewOrderRepository, repository.NewCartRepository,
+		usecase.NewUserUseCase, usecase.NewAdminUseCase, usecase.NewProductUseCase, usecase.NewOtpUseCase, usecase.NewOrderUseCase, usecase.NewCartUseCase,
+		handler.NewUserHandler, handler.NewAdminHandler, handler.NewProductHandler, handler.NewCartHandler,
 		http.NewServerHTTP)
 
 	return &http.ServerHTTP{}, nil

@@ -1,9 +1,5 @@
 package utils
 
-type Colours string
-
-type Size string
-
 type ResponseCategory string
 
 type Address struct {
@@ -15,8 +11,6 @@ type Address struct {
 	Country   string `json:"country"`
 	Pincode   string `json:"pincode"`
 }
-
-// type Product string
 
 // struct used to list all products
 type ResponseProducts struct {
@@ -69,4 +63,13 @@ type ResponseOrderDetails struct {
 	Country   string `json:"country"`
 	Pincode   string `json:"pincode"`
 	Status    string `json:"status"`
+}
+
+type ResViewCart struct {
+	Image     string `json:"image"`
+	ModelName string `json:"modelname"`
+	Price     uint   `json:"price"`
+	BrandName string `json:"brandname"`
+	Quantity  uint   `json:"quantity"`
+	Total     uint   `json:"total"`
 }
