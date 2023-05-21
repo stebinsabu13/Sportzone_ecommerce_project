@@ -261,26 +261,6 @@ func (cr *UserHandler) ShowUserDetails(c *gin.Context) {
 	})
 }
 
-func (cr *UserHandler) ShowOrders(c *gin.Context) {
-	id, ok := c.Get("user-id")
-	if !ok {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "Not ok",
-		})
-		return
-	}
-	orderDetails, err := cr.orderUseCase.OrderDetails(c.Request.Context(), id.(uint))
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"ORDER DETAILS": orderDetails,
-	})
-}
-
 func (cr *UserHandler) AddAddress(c *gin.Context) {
 	id, ok := c.Get("user-id")
 	if !ok {

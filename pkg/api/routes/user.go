@@ -45,7 +45,9 @@ func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productH
 		}
 		orders := home.Group("/orders")
 		{
-			orders.GET("/", userHandler.ShowOrders)
+			orders.GET("/", orderHandler.ShowOrders)
+			orders.GET("/detail", orderHandler.ShowOrderDetail)
+			orders.PATCH("/cancel", orderHandler.CancelOrder)
 		}
 		cart := home.Group("/cart")
 		{

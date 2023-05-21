@@ -20,7 +20,7 @@ func NewServerHTTP(userHandler *handler.UserHandler, adminHandler *handler.Admin
 
 	// set up routes
 	routes.UserRoutes(engine.Group("/"), userHandler, productHandler, cartHandler, orderHandler)
-	routes.AdminRoutes(engine.Group("/"), adminHandler, productHandler)
+	routes.AdminRoutes(engine.Group("/"), adminHandler, productHandler, orderHandler)
 
 	// no handler
 	engine.NoRoute(func(ctx *gin.Context) {

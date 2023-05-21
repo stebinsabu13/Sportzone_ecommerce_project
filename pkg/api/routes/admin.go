@@ -6,13 +6,13 @@ import (
 	"github.com/stebinsabu13/ecommerce-api/pkg/api/middleware"
 )
 
-func AdminRoutes(api *gin.RouterGroup, adminHandler *handler.AdminHandler, productHandler *handler.ProductHandler) {
+func AdminRoutes(api *gin.RouterGroup, adminHandler *handler.AdminHandler, productHandler *handler.ProductHandler, orderHandler *handler.OrderHandler) {
 	login := api.Group("/admin")
 	{
 		login.POST("/login", adminHandler.LoginHandler)
 		// login.POST("/signup", adminHandler.SignUp)
 	}
-	home := login.Group("/")
+	home := api.Group("/admin")
 	{
 		home.Use(middleware.AuthorizationMiddleware("admin"))
 		// home.GET("/home", adminHandler.HomeHandler)
@@ -41,6 +41,12 @@ func AdminRoutes(api *gin.RouterGroup, adminHandler *handler.AdminHandler, produ
 				productdetail.PATCH("/update/:productdetailid", productHandler.UpdateProductDetail)
 				productdetail.DELETE("/delete/:productdetailid", productHandler.DeleteProductDetail)
 			}
+		}
+		orders := home.Group("/order")
+		{
+			orders.GET("/", orderHandler.ListAllOrders)
+			orders.GET("/detail", orderHandler.ShowOrderDetail)
+			orders.PATCH("/update/status", orderHandler.UpdateStatus)
 		}
 	}
 }

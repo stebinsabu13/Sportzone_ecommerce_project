@@ -19,11 +19,13 @@ func NewCartRepository(db *gorm.DB) interfaces.CartRepository {
 
 func (c *CartDatabase) ViewCart(userid uint) ([]utils.ResViewCart, error) {
 	var cartdetail []utils.ResViewCart
-	query := `select p.model_name,p.image,pd.price,citm.quantity,citm.total,b.brand_name from products p
+	query := `select p.model_name,p.image,pd.price,citm.quantity,citm.total,b.brand_name,osize.size,ocolour.colour from products p
 	inner join product_details pd on p.id=pd.product_id
 	inner join cart_items citm on pd.id=citm.product_detail_id
 	left join brands b on p.brand_id=b.id
-	inner join carts cs on citm.cart_id=cs.id where cs.user_id=?`
+	inner join carts cs on citm.cart_id=cs.id
+	inner join available_sizes osize on osize.id=pd.available_size_id
+	inner join available_colours ocolour on ocolour.id=pd.available_colour_id where cs.user_id=?`
 	err := c.DB.Raw(query, userid).Scan(&cartdetail).Error
 	if err != nil {
 		return cartdetail, err

@@ -7,6 +7,13 @@ import (
 )
 
 type OrderUseCase interface {
-	OrderDetails(ctx context.Context, id uint) ([]utils.ResponseOrderDetails, error)
+	Orders(ctx context.Context, id uint) ([]utils.ResOrders, error)
+	OrderDetail(uint) ([]utils.ResponseOrderDetails, error)
 	AddtoOrders(uint, uint, uint) error
+	CancelOrder(uint) error
+
+	//Admin UseCase
+
+	ListAllOrders() ([]utils.ResAllOrders, error)
+	UpdateStatus(uint, uint) error
 }
