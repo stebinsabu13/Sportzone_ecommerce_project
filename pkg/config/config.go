@@ -6,21 +6,24 @@ import (
 )
 
 type Config struct {
-	DBHost     string `mapstructure:"DB_HOST"`
-	DBName     string `mapstructure:"DB_NAME"`
-	DBUser     string `mapstructure:"DB_USER"`
-	DBPort     string `mapstructure:"DB_PORT"`
-	DBPassword string `mapstructure:"DB_PASSWORD"`
-	JWT        string `mapstructure:"JWT_CODE"`
-	AUTHTOKEN  string `mapstructure:"AUTH_TOKEN"`
-	ACCOUNTSID string `mapstructure:"ACCOUNT_SID"`
-	SERVICESID string `mapstructure:"SERVICE_SID"`
+	DBHost         string `mapstructure:"DB_HOST"`
+	DBName         string `mapstructure:"DB_NAME"`
+	DBUser         string `mapstructure:"DB_USER"`
+	DBPort         string `mapstructure:"DB_PORT"`
+	DBPassword     string `mapstructure:"DB_PASSWORD"`
+	JWT            string `mapstructure:"JWT_CODE"`
+	AUTHTOKEN      string `mapstructure:"AUTH_TOKEN"`
+	ACCOUNTSID     string `mapstructure:"ACCOUNT_SID"`
+	SERVICESID     string `mapstructure:"SERVICE_SID"`
+	RAZORPAYKEY    string `mapstructure:"RAZORPAY_KEY"`
+	RAZORPAYSECRET string `mapstructure:"RAZORPAY_SECRET"`
 }
 
 var envs = []string{
 	"DB_HOST", "DB_NAME", "DB_USER", "DB_PORT", "DB_PASSWORD", //database
 	"JWT_CODE",                                 //jwt
 	"AUTH_TOKEN", "ACCOUNT_SID", "SERVICE_SID", //twilio details
+	"RAZORPAY_KEY", "RAZORPAY_SECRET", //razorpay details
 }
 
 var config Config

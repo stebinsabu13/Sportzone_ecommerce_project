@@ -9,7 +9,7 @@ import (
 type OrderUseCase interface {
 	Orders(ctx context.Context, id uint) ([]utils.ResOrders, error)
 	OrderDetail(uint) ([]utils.ResponseOrderDetails, error)
-	AddtoOrders(uint, uint, uint) error
+	AddtoOrders(uint, uint, uint) (utils.RazorpayOrder, error)
 	CancelOrder(uint) error
 
 	//Admin UseCase

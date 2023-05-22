@@ -30,6 +30,14 @@ func NewUserHandler(usecase services.UserUseCase, otpusecase services.OtpUseCase
 	}
 }
 
+// UserLogin godoc
+// @summary api for login of user
+// @description user login post request
+// @security ApiKeyAuth
+// @id User login
+// @tags Home
+// @Router /user/login [post]
+// @Success 200 "Welcome Home"
 func (cr *UserHandler) LoginHandler(c *gin.Context) {
 	// implement login logic here
 
@@ -64,7 +72,7 @@ func (cr *UserHandler) LoginHandler(c *gin.Context) {
 	}
 	c.SetCookie("user-token", tokenString, int(time.Now().Add(60*time.Minute).Unix()), "/", "localhost", false, true)
 	c.JSON(http.StatusOK, gin.H{
-		"Success": user,
+		"Success": "user login",
 	})
 }
 

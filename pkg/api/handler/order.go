@@ -29,15 +29,25 @@ func (cr *OrderHandler) AddtoOrders(c *gin.Context) {
 		})
 		return
 	}
-	if err := cr.orderUseCase.AddtoOrders(uint(addressid), uint(paymentid), id.(uint)); err != nil {
+	body, err := cr.orderUseCase.AddtoOrders(uint(addressid), uint(paymentid), id.(uint))
+	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"Success": "Order placed",
-	})
+	if paymentid == 2 {
+		c.HTML(200, "app.html", gin.H{
+			"UserId":      body.UserID,
+			"Orderid":     body.RazorpayOrderID,
+			"Total_price": body.AmountToPay,
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"Success":  "Order placed",
+			"Razorpay": body,
+		})
+	}
 }
 
 func (cr *OrderHandler) ShowOrders(c *gin.Context) {

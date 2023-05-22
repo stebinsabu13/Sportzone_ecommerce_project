@@ -110,3 +110,12 @@ type ResAllOrders struct {
 	Mode       string    `json:"mode"`
 	GrandTotal uint      `json:"grandtotal"`
 }
+
+// razorpay
+type RazorpayOrder struct {
+	RazorpayKey     string `json:"razorpay_key"`
+	AmountToPay     uint   `json:"amount_to_pay"`
+	RazorpayAmount  uint   `json:"razorpay_amount"`
+	RazorpayOrderID string `json:"razorpay_order_id"`
+	UserID          uint   `json:"userid"`
+}

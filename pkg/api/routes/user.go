@@ -57,7 +57,7 @@ func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productH
 		}
 		checkout := home.Group("/checkout")
 		{
-			checkout.POST("/add", orderHandler.AddtoOrders)
+			checkout.GET("/add", orderHandler.AddtoOrders)
 		}
 	}
 }
