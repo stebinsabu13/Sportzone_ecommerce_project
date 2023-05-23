@@ -30,6 +30,28 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 <script>
+// const queryParams = Object.fromEntries(window.location.search.split("&").map((value) => {
+//   const [key, value] = value.split("=");
+//   return {
+//     key,
+//     value,
+//   };
+// }));
+// console.log(queryParams);
+    // Get the current URL
+var url = new URL(window.location.href);
+
+// Get the query parameters from the URL
+var queryParams = new URLSearchParams(url.search);
+
+// Accessing specific query parameters
+var param1 = queryParams.get('addressid');
+var param2 = queryParams.get('paymentid');
+
+// Example usage
+console.log(param1); // Output: the value of param1
+console.log(param2); // Output: the value of param2
+
     var userid = document.getElementById("userid").innerHTML;
     var orderid = document.getElementById("orderid").innerHTML;
     var total = document.getElementById("total").innerHTML;
@@ -74,16 +96,23 @@
         $.ajax({
 
             //passes details as url params
-            url: `/payments/success?user_id=${userid}&payment_ref=${res.razorpay_payment_id}&order_id=${orderData}
-      &signature=${res.razorpay_signature}&id=${orderid}&total=${total}`,
+            url: `/user/checkout/success`,
             method: 'GET',
-
+            data:{
+                user_id:userid,
+                payment_ref:res.razorpay_payment_id,
+                order_id:orderid,
+                signature:res.razorpay_signature,
+                total:total,
+                addressid:param1,
+                paymentid:param2,
+            },
             success: (response) => {
                 console.log(response)
                 if (response.data) {
-                    location.href = '/'
+                    alert(response.message)
                 }else {
-                    alert(" payment failed.")
+                    alert(response.message)
                 }
             }
         })

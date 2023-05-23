@@ -34,17 +34,15 @@ func (c *orderUseCase) OrderDetail(id uint) ([]utils.ResponseOrderDetails, error
 	return c.orderrepo.OrderDetail(id)
 }
 
-func (c *orderUseCase) AddtoOrders(addressid, paymentid, userid uint) (utils.RazorpayOrder, error) {
-	var body utils.RazorpayOrder
+func (c *orderUseCase) AddtoOrders(addressid, paymentid, userid uint) error {
 	cart, err := c.cartRepo.FindCartById(userid)
 	if err != nil {
-		return body, err
+		return err
 	}
 	cartitems, err1 := c.orderrepo.Findcartitems(cart.ID)
 	if err1 != nil {
-		return body, err1
+		return err1
 	}
-
 	order := domain.Order{
 		UserID:     cart.UserID,
 		PlacedDate: time.Now(),
@@ -52,29 +50,27 @@ func (c *orderUseCase) AddtoOrders(addressid, paymentid, userid uint) (utils.Raz
 		PaymentID:  paymentid,
 		GrandTotal: uint(cart.GrandTotal),
 	}
-	if paymentid == 1 {
-		if err := c.orderrepo.AddtoOrders(cartitems, order); err != nil {
-			return body, err
-		}
-	} else if paymentid == 2 {
-		body, err = c.Razorpayment(order.GrandTotal, userid)
-		if err != nil {
-			return body, err
-		}
+	if err := c.orderrepo.AddtoOrders(cartitems, order); err != nil {
+		return err
 	}
-	return body, nil
+	return nil
 }
 
-func (c *orderUseCase) Razorpayment(Amount, userid uint) (razorpayOrder utils.RazorpayOrder, err error) {
+func (c *orderUseCase) Razorpayment(userid uint) (razorpayOrder utils.RazorpayOrder, err error) {
+	var body utils.RazorpayOrder
+	cart, err := c.cartRepo.FindCartById(userid)
+	if err != nil {
+		return body, err
+	}
 	// generate razorpay order
 	//razorpay amount is caluculate on pisa for india so make the actual price into paisa
-	razorPayAmount := Amount * 100
+	razorPayAmount := cart.GrandTotal * 100
 	razopayOrderId, err := support.GenerateRazorpayOrder(razorPayAmount, "test reciept")
 	if err != nil {
 		return razorpayOrder, err
 	}
 	// set all details on razopay order
-	razorpayOrder.AmountToPay = Amount
+	razorpayOrder.AmountToPay = uint(cart.GrandTotal)
 	razorpayOrder.RazorpayAmount = razorPayAmount
 
 	razorpayOrder.RazorpayKey = config.GetCofig().RAZORPAYKEY

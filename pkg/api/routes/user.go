@@ -58,6 +58,7 @@ func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productH
 		checkout := home.Group("/checkout")
 		{
 			checkout.GET("/add", orderHandler.AddtoOrders)
+			checkout.GET("/success", orderHandler.RazorpaymentSuccess)
 		}
 	}
 }

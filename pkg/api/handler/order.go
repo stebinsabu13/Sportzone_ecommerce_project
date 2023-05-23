@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stebinsabu13/ecommerce-api/pkg/support"
 	services "github.com/stebinsabu13/ecommerce-api/pkg/usecase/interface"
 )
 
@@ -29,23 +30,28 @@ func (cr *OrderHandler) AddtoOrders(c *gin.Context) {
 		})
 		return
 	}
-	body, err := cr.orderUseCase.AddtoOrders(uint(addressid), uint(paymentid), id.(uint))
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
 	if paymentid == 2 {
+		body, err := cr.orderUseCase.Razorpayment(id.(uint))
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
 		c.HTML(200, "app.html", gin.H{
-			"UserId":      body.UserID,
+			"UserID":      body.UserID,
 			"Orderid":     body.RazorpayOrderID,
 			"Total_price": body.AmountToPay,
 		})
 	} else {
+		if err := cr.orderUseCase.AddtoOrders(uint(addressid), uint(paymentid), id.(uint)); err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
 		c.JSON(http.StatusOK, gin.H{
-			"Success":  "Order placed",
-			"Razorpay": body,
+			"Success": "Order placed",
 		})
 	}
 }
@@ -142,4 +148,34 @@ func (cr *OrderHandler) UpdateStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"Success": "Status updated",
 	})
+}
+
+func (cr *OrderHandler) RazorpaymentSuccess(c *gin.Context) {
+	orderID := c.Query("order_id")
+	userID, err1 := strconv.Atoi(c.Query("user_id"))
+	// total, err2 := strconv.ParseFloat(c.Query("total"), 32)
+	addressid, err2 := strconv.Atoi(c.Query("addressid"))
+	paymentid, err3 := strconv.Atoi(c.Query("paymentid"))
+	payment_refID := c.Query("payment_ref")
+	signatureID := c.Query("signature")
+	response := gin.H{
+		"data":    false,
+		"message": "Payment failed",
+	}
+	err := errors.Join(err3, err2, err1)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+	if err := support.VeifyRazorpayPayment(orderID, payment_refID, signatureID); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+	if err := cr.orderUseCase.AddtoOrders(uint(addressid), uint(paymentid), uint(userID)); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, response)
+		return
+	}
+	response["data"] = true
+	response["message"] = "Payment Success."
+	c.JSON(http.StatusOK, response)
 }
