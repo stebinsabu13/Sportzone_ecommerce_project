@@ -15,4 +15,5 @@ type AdminUseCase interface {
 	ListAllCategories(ctx context.Context) ([]utils.ResponseCategory, error)
 	AddCategory(ctx context.Context, category domain.Category) error
 	DeleteCategory(ctx context.Context, id string) error
+	GetFullSalesReport(utils.SalesReport) ([]utils.ResSalesReport, error)
 }

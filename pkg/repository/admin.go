@@ -83,3 +83,14 @@ func (c *adminDatabase) DeleteCategory(ctx context.Context, id string) error {
 	}
 	return nil
 }
+
+func (c *adminDatabase) GetFullSalesReport(reqData utils.SalesReport) ([]utils.ResSalesReport, error) {
+	var salesreport []utils.ResSalesReport
+	if reqData.Frequency == "MONTHLY" {
+		result := c.DB.Where("YEAR(created_at) = ? AND MONTH(created_at) = ?", reqData.Year, reqData.Month).Select("")
+		if result.Error != nil {
+			return salesreport, result.Error
+		}
+	}
+	return salesreport, nil
+}

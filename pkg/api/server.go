@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stebinsabu13/ecommerce-api/pkg/api/handler"
 	"github.com/stebinsabu13/ecommerce-api/pkg/api/routes"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type ServerHTTP struct {
@@ -17,6 +19,9 @@ func NewServerHTTP(userHandler *handler.UserHandler, adminHandler *handler.Admin
 	engine := gin.New()
 
 	engine.Use(gin.Logger())
+
+	// swagger docs
+	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// set up routes
 	routes.UserRoutes(engine.Group("/"), userHandler, productHandler, cartHandler, orderHandler)

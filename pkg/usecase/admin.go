@@ -50,3 +50,7 @@ func (c *adminUseCase) DeleteCategory(ctx context.Context, id string) error {
 	err := c.adminrepo.DeleteCategory(ctx, id)
 	return err
 }
+
+func (c *adminUseCase) GetFullSalesReport(reqData utils.SalesReport) ([]utils.ResSalesReport, error) {
+	return c.adminrepo.GetFullSalesReport(reqData)
+}

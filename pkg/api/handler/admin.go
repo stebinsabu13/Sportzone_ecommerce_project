@@ -218,3 +218,42 @@ func (cr *AdminHandler) DeleteCategory(c *gin.Context) {
 		"Success": "Category deleted",
 	})
 }
+
+func (cr *AdminHandler) FullSalesReport(c *gin.Context) {
+	// time
+	monthInt, err1 := strconv.Atoi(c.Query("month"))
+	month := time.Month(monthInt)
+	year, err2 := strconv.Atoi(c.Query("year"))
+	frequency := c.Query("frequency")
+
+	// page
+	count, err3 := strconv.Atoi(c.Query("count"))
+	pageNumber, err4 := strconv.Atoi(c.Query("page_number"))
+	err := errors.Join(err1, err2, err3, err4)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	offset := (pageNumber - 1) * count
+	reqData := utils.SalesReport{
+		Month:     month,
+		Year:      year,
+		Frequency: frequency,
+		Pagination: utils.Pagination{
+			Offset: uint(offset),
+			Limit:  uint(count),
+		},
+	}
+	salesreport, err5 := cr.AdminUseCase.GetFullSalesReport(reqData)
+	if err5 != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err5.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Report": salesreport,
+	})
+}

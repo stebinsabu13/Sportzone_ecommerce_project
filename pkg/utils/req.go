@@ -1,5 +1,7 @@
 package utils
 
+import "time"
+
 type BodyLogin struct {
 	Email    string `binding:"required"`
 	Password string `binding:"required"`
@@ -27,6 +29,10 @@ type EditProfileReq struct {
 	Email     string `json:"email" binding:"required,email"`
 }
 
-// type  struct {
-
-// }
+type SalesReport struct {
+	Month     time.Month `json:"startdate"`
+	Year      int        `json:"year"`
+	Frequency string     `json:"frequency"`
+	EndDate   time.Time  `json:"enddate"`
+	Pagination
+}

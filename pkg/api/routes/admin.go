@@ -17,6 +17,11 @@ func AdminRoutes(api *gin.RouterGroup, adminHandler *handler.AdminHandler, produ
 		home.Use(middleware.AuthorizationMiddleware("admin"))
 		// home.GET("/home", adminHandler.HomeHandler)
 		home.POST("/logout", adminHandler.LogoutHandler)
+		// // sales report
+		sales := home.Group("/sales")
+		{
+			sales.GET("/", adminHandler.FullSalesReport)
+		}
 		user := home.Group("/user")
 		{
 			user.GET("/", adminHandler.ListAllUsers)

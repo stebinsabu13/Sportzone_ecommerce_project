@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"time"
 
 	"github.com/razorpay/razorpay-go"
 	"github.com/stebinsabu13/ecommerce-api/pkg/config"
@@ -116,4 +117,15 @@ func VeifyRazorpayPayment(razorpayOrderID, razorpayPaymentID, razorpaySignature 
 	}
 
 	return nil
+}
+
+func StringToTime(timeString string) (timeValue time.Time, err error) {
+
+	// parse the string time to time
+	timeValue, err = time.Parse("2006-01-02", timeString)
+
+	if err != nil {
+		return timeValue, fmt.Errorf("faild to parse given time %v to time variable \nivalid input", timeString)
+	}
+	return timeValue, nil
 }

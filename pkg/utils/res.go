@@ -113,9 +113,21 @@ type ResAllOrders struct {
 
 // razorpay
 type RazorpayOrder struct {
-	RazorpayKey     string `json:"razorpay_key"`
-	AmountToPay     uint   `json:"amount_to_pay"`
-	RazorpayAmount  int    `json:"razorpay_amount"`
-	RazorpayOrderID string `json:"razorpay_order_id"`
+	RazorpayKey     string `json:"razorpaykey"`
+	AmountToPay     uint   `json:"amounttopay"`
+	RazorpayAmount  int    `json:"razorpayamount"`
+	RazorpayOrderID string `json:"razorpayorderid"`
 	UserID          uint   `json:"userid"`
+}
+
+//salesreport
+type ResSalesReport struct {
+	Month       string    `json:"month"`
+	UserID      uint      `json:"userid"`
+	FirstName   string    `json:"firstname"`
+	Email       string    `json:"email"`
+	OrderID     uint      `json:"orderid"`
+	PlacedDate  time.Time `json:"placeddate"`
+	GrandTotal  uint      `json:"grand_total"`
+	PaymentMode string    `json:"paymentmode"`
 }

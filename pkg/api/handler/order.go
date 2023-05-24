@@ -153,7 +153,6 @@ func (cr *OrderHandler) UpdateStatus(c *gin.Context) {
 func (cr *OrderHandler) RazorpaymentSuccess(c *gin.Context) {
 	orderID := c.Query("order_id")
 	userID, err1 := strconv.Atoi(c.Query("user_id"))
-	// total, err2 := strconv.ParseFloat(c.Query("total"), 32)
 	addressid, err2 := strconv.Atoi(c.Query("addressid"))
 	paymentid, err3 := strconv.Atoi(c.Query("paymentid"))
 	payment_refID := c.Query("payment_ref")
