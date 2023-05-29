@@ -20,4 +20,5 @@ type UserUseCase interface {
 	EditProfile(context.Context, utils.EditProfileReq, uint) error
 	ChangePassword(context.Context, string, string) error
 	ListAllCategories(ctx context.Context) ([]utils.ResponseCategory, error)
+	ViewWallet(uint) ([]utils.ResWallet, int, error)
 }

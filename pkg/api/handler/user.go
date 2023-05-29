@@ -414,3 +414,24 @@ func (cr *UserHandler) ListAllCategories(c *gin.Context) {
 		"Categories": categories,
 	})
 }
+
+func (cr *UserHandler) ViewWallet(c *gin.Context) {
+	userid, ok := c.Get("user-id")
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Not ok",
+		})
+		return
+	}
+	wallet, balance, err := cr.userUseCase.ViewWallet(userid.(uint))
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Wallet":            wallet,
+		"Balance in wallet": balance,
+	})
+}

@@ -72,3 +72,7 @@ func (c *userUseCase) ListAllCategories(ctx context.Context) ([]utils.ResponseCa
 	categories, err := c.userRepo.ListAllCategories(ctx)
 	return categories, err
 }
+
+func (c *userUseCase) ViewWallet(userid uint) ([]utils.ResWallet, int, error) {
+	return c.userRepo.ViewWallet(userid)
+}

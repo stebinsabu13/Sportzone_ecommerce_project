@@ -72,9 +72,9 @@ func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productH
 			checkout.GET("/add", orderHandler.AddtoOrders)
 			checkout.GET("/success", orderHandler.RazorpaymentSuccess)
 		}
-		// wallet:=home.Group("/wallet")
-		// {
-		// 	wallet.
-		// }
+		wallet := home.Group("/wallet")
+		{
+			wallet.GET("/", userHandler.ViewWallet)
+		}
 	}
 }

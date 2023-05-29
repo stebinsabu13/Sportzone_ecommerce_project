@@ -143,3 +143,10 @@ type ResWidgets struct {
 	Numberofproducts      int `json:"numberofproducts"`
 	Numberofpendingorders int `json:"numberofpendingorders"`
 }
+
+type ResWallet struct {
+	ID           uint       `json:"id"`
+	CreditedDate *time.Time `json:"crediteddate"`
+	DebitedDate  *time.Time `json:"debiteddate"`
+	Amount       int        `json:"amount"`
+}

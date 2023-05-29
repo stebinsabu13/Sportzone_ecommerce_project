@@ -11,7 +11,7 @@ type OrderUseCase interface {
 	OrderDetail(uint) ([]utils.ResponseOrderDetails, error)
 	AddtoOrders(uint, uint, uint) error
 	Razorpayment(uint) (razorpayOrder utils.RazorpayOrder, err error)
-	CancelOrder(uint, uint) error
+	CancelOrder(context.Context, uint, uint) error
 	ReturnOrder(uint, uint) error
 
 	//Admin UseCase

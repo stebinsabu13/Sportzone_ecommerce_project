@@ -152,3 +152,14 @@ func (c *userDatabase) ListAllCategories(ctx context.Context) ([]utils.ResponseC
 	}
 	return categories, nil
 }
+
+func (c *userDatabase) ViewWallet(userid uint) (wallet []utils.ResWallet, balance int, err error) {
+	query := `SELECT id,credited_date,debited_date,amount from wallets where user_id=?`
+	if err = c.DB.Raw(query, userid).Scan(&wallet).Error; err != nil {
+		return
+	}
+	if err = c.DB.Model(&domain.Wallet{}).Select("sum(amount) as balance").Where("user_id=?", userid).Scan(&balance).Error; err != nil {
+		return
+	}
+	return
+}

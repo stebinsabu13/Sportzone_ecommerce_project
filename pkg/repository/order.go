@@ -50,10 +50,30 @@ func (c *OrderDatabase) OrderDetail(id uint) ([]utils.ResponseOrderDetails, erro
 }
 func (c *OrderDatabase) AddtoOrders(items []utils.ResCartItems, order domain.Order) error {
 	var stock uint
+	var balance int
 	tx := c.DB.Begin()
 	if err := tx.Create(&order).Error; err != nil {
 		tx.Rollback()
 		return err
+	}
+	if order.PaymentID == 3 {
+		if err := tx.Model(&domain.Wallet{}).Select("sum(amount)").Where("user_id=?", order.UserID).Scan(&balance).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		if balance < int(order.GrandTotal) {
+			return errors.New("insufficient balance in wallet,choose different payment option")
+		}
+		current := time.Now()
+		wallet := domain.Wallet{
+			UserID:      order.UserID,
+			DebitedDate: &current,
+			Amount:      -1 * int(order.GrandTotal),
+		}
+		if err := tx.Create(&wallet).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 	}
 	for _, v := range items {
 		orderitem := domain.OrderDetails{
@@ -118,15 +138,18 @@ func (c *OrderDatabase) FindOrderitem(id uint) (domain.OrderDetails, time.Time, 
 	return item, date, nil
 }
 
-func (c *OrderDatabase) CancelOrder(item domain.OrderDetails) error {
+func (c *OrderDatabase) CancelOrder(ctx context.Context, item domain.OrderDetails) error {
+	userid := ctx.Value("user-id")
 	prodetail := struct {
 		Price      uint
 		Stock      uint
 		percentage int
+		Paymode    int
 	}{
 		Price:      0,
 		Stock:      0,
 		percentage: 0,
+		Paymode:    0,
 	}
 	var grandtotal int
 	tx := c.DB.Begin()
@@ -155,6 +178,23 @@ func (c *OrderDatabase) CancelOrder(item domain.OrderDetails) error {
 	if err := tx.Model(&domain.Order{}).Where("id=?", item.OrderID).UpdateColumn("grand_total", total).Error; err != nil {
 		tx.Rollback()
 		return err
+	}
+	if err := tx.Model(&domain.Order{}).Where("id=?", item.OrderID).Select("payment_id").Scan(&prodetail.Paymode).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	if prodetail.Paymode != 1 {
+		discount := (prodetail.percentage * int(prodetail.Price)) / 100
+		current := time.Now()
+		wallet := domain.Wallet{
+			UserID:       userid.(uint),
+			CreditedDate: &current,
+			Amount:       int(item.Quantity) * (int(prodetail.Price) - discount),
+		}
+		if err := tx.Create(&wallet).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 	}
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()

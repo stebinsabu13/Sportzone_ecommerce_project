@@ -106,7 +106,7 @@ func (cr *OrderHandler) CancelOrder(c *gin.Context) {
 		})
 		return
 	}
-	if err := cr.orderUseCase.CancelOrder(uint(id), uint(statusid)); err != nil {
+	if err := cr.orderUseCase.CancelOrder(c.Request.Context(), uint(id), uint(statusid)); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
