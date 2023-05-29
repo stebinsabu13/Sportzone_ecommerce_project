@@ -35,13 +35,14 @@ func (c *OrderDatabase) Orders(ctx context.Context, id uint) ([]utils.ResOrders,
 
 func (c *OrderDatabase) OrderDetail(id uint) ([]utils.ResponseOrderDetails, error) {
 	var orderdetail []utils.ResponseOrderDetails
-	query := `select od.id,p.image,p.model_name,pd.price,b.brand_name,osize.size,ocolour.colour,od.quantity,os.status,od.delivered_date,od.cancelled_date from products p
+	query := `select od.id,p.image,p.model_name,pd.price,b.brand_name,osize.size,ocolour.colour,od.quantity,os.status,od.delivered_date,od.cancelled_date,d.percentage from products p
 	inner join product_details pd on p.id=pd.product_id
 	left join brands b on b.id=p.brand_id
 	inner join order_details od on od.product_detail_id=pd.id
 	inner join available_sizes osize on pd.available_size_id=osize.id
 	inner join available_colours ocolour on pd.available_colour_id=ocolour.id
-	inner join order_statuses os on od.order_status_id=os.id where od.order_id=?`
+	inner join order_statuses os on od.order_status_id=os.id
+	left join discounts d on pd.discount_id=d.id where od.order_id=?`
 	if err := c.DB.Raw(query, id).Scan(&orderdetail).Error; err != nil {
 		return orderdetail, err
 	}
@@ -119,15 +120,21 @@ func (c *OrderDatabase) FindOrderitem(id uint) (domain.OrderDetails, time.Time, 
 
 func (c *OrderDatabase) CancelOrder(item domain.OrderDetails) error {
 	prodetail := struct {
-		Price uint
-		Stock uint
+		Price      uint
+		Stock      uint
+		percentage int
 	}{
-		Price: 0,
-		Stock: 0,
+		Price:      0,
+		Stock:      0,
+		percentage: 0,
 	}
 	var grandtotal int
 	tx := c.DB.Begin()
 	if err := tx.Model(&domain.OrderDetails{}).Where("id=?", item.ID).UpdateColumns(&item).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	if err := tx.Model(&domain.Discount{}).Joins("join product_details on discounts.id=product_details.discount_id").Where("product_details.id=?", item.ProductDetailID).Select("discounts.percentage").Scan(&prodetail.percentage).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -143,13 +150,21 @@ func (c *OrderDatabase) CancelOrder(item domain.OrderDetails) error {
 		tx.Rollback()
 		return err
 	}
-	total := grandtotal - (int(item.Quantity) * int(prodetail.Price))
+	discount := (prodetail.percentage * int(prodetail.Price)) / 100
+	total := grandtotal - (int(item.Quantity) * (int(prodetail.Price) - discount))
 	if err := tx.Model(&domain.Order{}).Where("id=?", item.OrderID).UpdateColumn("grand_total", total).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
+		return err
+	}
+	return nil
+}
+
+func (c *OrderDatabase) ReturnOrder(item domain.OrderDetails) error {
+	if err := c.DB.Model(&domain.OrderDetails{}).Where("id=?", item.ID).UpdateColumns(&item).Error; err != nil {
 		return err
 	}
 	return nil
@@ -170,7 +185,52 @@ func (c *OrderDatabase) ListAllOrders() ([]utils.ResAllOrders, error) {
 }
 
 func (c *OrderDatabase) UpdateStatus(item domain.OrderDetails) error {
-	if err := c.DB.Model(&domain.OrderDetails{}).Where("id=?", item.ID).UpdateColumns(&item).Error; err != nil {
+	var userid uint
+	prodetail := struct {
+		Price      uint
+		Stock      uint
+		percentage int
+	}{
+		Price:      0,
+		Stock:      0,
+		percentage: 0,
+	}
+	tx := c.DB.Begin()
+	if err := tx.Model(&domain.OrderDetails{}).Where("id=?", item.ID).UpdateColumns(&item).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	if item.OrderStatusID == 5 {
+		if err := tx.Model(&domain.Order{}).Where("id=?", item.OrderID).Select("user_id").Scan(&userid).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err := tx.Model(&domain.ProductDetails{}).Where("id=?", item.ProductDetailID).Select("price,stock").Scan(&prodetail).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err := tx.Model(&domain.Discount{}).Joins("join product_details on discounts.id=product_details.discount_id").Where("product_details.id=?", item.ProductDetailID).Select("discounts.percentage").Scan(&prodetail.percentage).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err := tx.Model(&domain.ProductDetails{}).Where("id=?", item.ProductDetailID).UpdateColumn("stock", (prodetail.Stock + item.Quantity)).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		discount := (prodetail.percentage * int(prodetail.Price)) / 100
+		current := time.Now()
+		wallet := domain.Wallet{
+			UserID:       userid,
+			CreditedDate: &current,
+			Amount:       int(item.Quantity) * (int(prodetail.Price) - discount),
+		}
+		if err := tx.Create(&wallet).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
 		return err
 	}
 	return nil

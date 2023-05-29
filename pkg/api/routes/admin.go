@@ -53,5 +53,9 @@ func AdminRoutes(api *gin.RouterGroup, adminHandler *handler.AdminHandler, produ
 			orders.GET("/detail", orderHandler.ShowOrderDetail)
 			orders.PATCH("/update/status", orderHandler.UpdateStatus)
 		}
+		dashboard := home.Group("/dashboard")
+		{
+			dashboard.GET("/", adminHandler.Dashboard)
+		}
 	}
 }

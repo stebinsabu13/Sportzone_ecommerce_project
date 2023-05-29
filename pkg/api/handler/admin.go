@@ -257,3 +257,16 @@ func (cr *AdminHandler) FullSalesReport(c *gin.Context) {
 		"Report": salesreport,
 	})
 }
+
+func (cr *AdminHandler) Dashboard(c *gin.Context) {
+	reswidgets, err := cr.AdminUseCase.Widgets()
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Widgets": reswidgets,
+	})
+}

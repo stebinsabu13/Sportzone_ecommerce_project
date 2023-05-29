@@ -19,4 +19,5 @@ type UserUseCase interface {
 	AddAddress(context.Context, domain.Address) error
 	EditProfile(context.Context, utils.EditProfileReq, uint) error
 	ChangePassword(context.Context, string, string) error
+	ListAllCategories(ctx context.Context) ([]utils.ResponseCategory, error)
 }

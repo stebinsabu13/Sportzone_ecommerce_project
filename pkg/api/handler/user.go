@@ -269,6 +269,26 @@ func (cr *UserHandler) ShowUserDetails(c *gin.Context) {
 	})
 }
 
+func (cr *UserHandler) ShowAllAddress(c *gin.Context) {
+	id, ok := c.Get("user-id")
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Not ok",
+		})
+		return
+	}
+	addresses, err := cr.userUseCase.ShowAddress(c.Request.Context(), id.(uint))
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"addresses": addresses,
+	})
+}
+
 func (cr *UserHandler) AddAddress(c *gin.Context) {
 	id, ok := c.Get("user-id")
 	if !ok {
@@ -379,5 +399,18 @@ func (cr *UserHandler) ForgotPasswordOtpverify(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"Success": "Password updated",
+	})
+}
+
+func (cr *UserHandler) ListAllCategories(c *gin.Context) {
+	categories, err := cr.userUseCase.ListAllCategories(c.Request.Context())
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Categories": categories,
 	})
 }

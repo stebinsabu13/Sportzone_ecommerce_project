@@ -67,3 +67,8 @@ func (c *userUseCase) EditProfile(ctx context.Context, profile utils.EditProfile
 func (c *userUseCase) ChangePassword(ctx context.Context, newpassword string, mobile_num string) error {
 	return c.userRepo.ChangePassword(ctx, newpassword, mobile_num)
 }
+
+func (c *userUseCase) ListAllCategories(ctx context.Context) ([]utils.ResponseCategory, error) {
+	categories, err := c.userRepo.ListAllCategories(ctx)
+	return categories, err
+}

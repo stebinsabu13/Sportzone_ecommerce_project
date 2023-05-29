@@ -81,7 +81,7 @@ func (c *orderUseCase) Razorpayment(userid uint) (razorpayOrder utils.RazorpayOr
 	return razorpayOrder, nil
 }
 
-func (c *orderUseCase) CancelOrder(id uint) error {
+func (c *orderUseCase) CancelOrder(id, statusid uint) error {
 	orderitem, date, err := c.orderrepo.FindOrderitem(id)
 	if err != nil {
 		return err
@@ -89,13 +89,42 @@ func (c *orderUseCase) CancelOrder(id uint) error {
 	if orderitem.DeliveredDate != nil {
 		return errors.New("already delivered,if not delivered contact customer support")
 	}
+	if orderitem.CancelledDate != nil {
+		return errors.New("order already cancelled")
+	}
 	if time.Now().After(date.Add(24 * time.Hour)) {
 		return errors.New("cancellation time exceeds")
 	}
 	current := time.Now()
-	orderitem.OrderStatusID = 2
+	orderitem.OrderStatusID = statusid
 	orderitem.CancelledDate = &current
 	if err := c.orderrepo.CancelOrder(orderitem); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *orderUseCase) ReturnOrder(id, statusid uint) error {
+	orderitem, _, err := c.orderrepo.FindOrderitem(id)
+	if err != nil {
+		return err
+	}
+	if orderitem.CancelledDate != nil {
+		return errors.New("order already cancelled")
+	}
+	if orderitem.DeliveredDate == nil {
+		return errors.New("order not delivered yet")
+	}
+	if orderitem.ReturnSubmitDate != nil {
+		return errors.New("request already submitted,contact customer support")
+	}
+	if time.Now().After(orderitem.DeliveredDate.Add(120 * time.Hour)) {
+		return errors.New("returning time exceeds")
+	}
+	current := time.Now()
+	orderitem.OrderStatusID = statusid
+	orderitem.ReturnSubmitDate = &current
+	if err := c.orderrepo.ReturnOrder(orderitem); err != nil {
 		return err
 	}
 	return nil
@@ -112,11 +141,27 @@ func (c *orderUseCase) UpdateStatus(id, statusid uint) error {
 	if err != nil {
 		return err
 	}
-	current := time.Now()
-	orderitem.OrderStatusID = statusid
-	orderitem.DeliveredDate = &current
-	if err := c.orderrepo.UpdateStatus(orderitem); err != nil {
-		return err
+	if orderitem.CancelledDate != nil {
+		return errors.New("order already cancelled")
+	}
+	if statusid == 1 {
+		if orderitem.DeliveredDate != nil {
+			return errors.New("order already delivered")
+		}
+		current := time.Now()
+		orderitem.OrderStatusID = statusid
+		orderitem.DeliveredDate = &current
+		if err := c.orderrepo.UpdateStatus(orderitem); err != nil {
+			return err
+		}
+	} else if statusid == 5 {
+		if orderitem.ReturnSubmitDate == nil {
+			return errors.New("not requested for return")
+		}
+		orderitem.OrderStatusID = statusid
+		if err := c.orderrepo.UpdateStatus(orderitem); err != nil {
+			return err
+		}
 	}
 	return nil
 }

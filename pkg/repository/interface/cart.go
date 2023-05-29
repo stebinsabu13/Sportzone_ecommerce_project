@@ -8,7 +8,7 @@ import (
 type CartRepository interface {
 	ViewCart(userid uint) ([]utils.ResViewCart, error)
 	FindCartById(userid uint) (domain.Cart, error)
-	FindProductDetailById(id string) (domain.ProductDetails, error)
+	FindProductDetailById(id string) (domain.ProductDetails, int, error)
 	FindProductExsist(id string, cartid uint) (domain.CartItem, error)
 	UpdateCartitem(exsistitem domain.CartItem) error
 	AddNewitem(item domain.CartItem) error

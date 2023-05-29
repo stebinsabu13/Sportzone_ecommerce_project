@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -30,4 +32,12 @@ type Address struct {
 type PaymentMode struct {
 	ID   uint   `json:"id" gorm:"primarykey;auto_increment"`
 	Mode string `json:"mode" gorm:"not null"`
+}
+
+type Wallet struct {
+	ID           uint       `json:"id" gorm:"primarykey;auto_increment"`
+	UserID       uint       `json:"userid" gorm:"not null"`
+	CreditedDate *time.Time `json:"crediteddate" gorm:"type:null"`
+	DebitedDate  *time.Time `json:"debiteddate" gorm:"type:null"`
+	Amount       int        `json:"amount" gorm:"not null"`
 }

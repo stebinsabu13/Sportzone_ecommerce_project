@@ -98,13 +98,15 @@ func (cr *OrderHandler) ShowOrderDetail(c *gin.Context) {
 
 func (cr *OrderHandler) CancelOrder(c *gin.Context) {
 	id, err1 := strconv.Atoi(c.Query("orderdetailid"))
-	if err1 != nil {
+	statusid, err2 := strconv.Atoi(c.Query("statusid"))
+	err := errors.Join(err1, err2)
+	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": err1.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
-	if err := cr.orderUseCase.CancelOrder(uint(id)); err != nil {
+	if err := cr.orderUseCase.CancelOrder(uint(id), uint(statusid)); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
@@ -144,6 +146,7 @@ func (cr *OrderHandler) UpdateStatus(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"Success": "Status updated",
@@ -177,4 +180,25 @@ func (cr *OrderHandler) RazorpaymentSuccess(c *gin.Context) {
 	response["data"] = true
 	response["message"] = "Payment Success."
 	c.JSON(http.StatusOK, response)
+}
+
+func (cr *OrderHandler) ReturnOrder(c *gin.Context) {
+	id, err1 := strconv.Atoi(c.Query("orderdetailid"))
+	statusid, err2 := strconv.Atoi(c.Query("statusid"))
+	err := errors.Join(err1, err2)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	if err := cr.orderUseCase.ReturnOrder(uint(id), uint(statusid)); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success": "Order returning request submitted",
+	})
 }

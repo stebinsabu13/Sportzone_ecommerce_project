@@ -184,3 +184,72 @@ func (cr *ProductHandler) DeleteProductDetail(c *gin.Context) {
 		"Success": "Product detail deleted",
 	})
 }
+
+func (cr *ProductHandler) ProductsByCategory(c *gin.Context) {
+	id := c.Param("categoryid")
+	page, err := strconv.Atoi(c.Query("page"))
+	limit, err1 := strconv.Atoi(c.Query("limit"))
+	err = errors.Join(err, err1)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	offset := (page - 1) * limit
+	pagination := utils.Pagination{
+		Offset: uint(offset),
+		Limit:  uint(limit),
+	}
+	products, err := cr.productUseCase.ProductsByCategory(id, pagination)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"products": products,
+	})
+}
+
+func (cr *ProductHandler) ListAllBrands(c *gin.Context) {
+	brands, err := cr.productUseCase.ListAllBrands()
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"brands": brands,
+	})
+}
+
+func (cr *ProductHandler) ProductsByBrands(c *gin.Context) {
+	id := c.Param("brandid")
+	page, err := strconv.Atoi(c.Query("page"))
+	limit, err1 := strconv.Atoi(c.Query("limit"))
+	err = errors.Join(err, err1)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	offset := (page - 1) * limit
+	pagination := utils.Pagination{
+		Offset: uint(offset),
+		Limit:  uint(limit),
+	}
+	products, err := cr.productUseCase.ProductsByBrands(id, pagination)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"products": products,
+	})
+}

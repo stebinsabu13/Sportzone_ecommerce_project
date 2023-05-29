@@ -33,7 +33,7 @@ func (c *cartUseCase) AdditemtoCart(id string, userid uint) error {
 	if err != nil {
 		return err
 	}
-	productdetail, err1 := c.cartRepo.FindProductDetailById(id)
+	productdetail, discountpercent, err1 := c.cartRepo.FindProductDetailById(id)
 	if err1 != nil {
 		return err1
 	}
@@ -44,9 +44,10 @@ func (c *cartUseCase) AdditemtoCart(id string, userid uint) error {
 		if err2 != nil {
 			return err2
 		}
+		discount := (discountpercent * int(productdetail.Price)) / 100
 		if exsistitem.ID != 0 {
 			exsistitem.Quantity += 1
-			exsistitem.Total = exsistitem.Quantity * productdetail.Price
+			exsistitem.Total = exsistitem.Quantity * (productdetail.Price - uint(discount))
 			if err := c.cartRepo.UpdateCartitem(exsistitem); err != nil {
 				return err
 			}
@@ -55,7 +56,7 @@ func (c *cartUseCase) AdditemtoCart(id string, userid uint) error {
 				CartID:          cart.ID,
 				ProductDetailID: productdetail.ID,
 				Quantity:        1,
-				Total:           productdetail.Price,
+				Total:           productdetail.Price - uint(discount),
 			}
 			if err := c.cartRepo.AddNewitem(item); err != nil {
 				return err
@@ -74,13 +75,14 @@ func (c *cartUseCase) RemoveitemFromCart(id string, userid uint) error {
 	if err1 != nil {
 		return err1
 	}
-	productdetail, err2 := c.cartRepo.FindProductDetailById(id)
+	productdetail, discountpercent, err2 := c.cartRepo.FindProductDetailById(id)
 	if err2 != nil {
 		return err2
 	}
+	discount := (discountpercent * int(productdetail.Price)) / 100
 	if exsistitem.Quantity > 1 {
 		exsistitem.Quantity -= 1
-		exsistitem.Total = exsistitem.Quantity * productdetail.Price
+		exsistitem.Total = exsistitem.Quantity * (productdetail.Price - uint(discount))
 		if err := c.cartRepo.UpdateCartitem(exsistitem); err != nil {
 			return err
 		}

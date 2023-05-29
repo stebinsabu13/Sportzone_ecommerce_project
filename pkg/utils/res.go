@@ -3,6 +3,7 @@ package utils
 import "time"
 
 type ResponseCategory string
+type ResBrands string
 
 type Address struct {
 	ID        uint   `json:"id"`
@@ -16,9 +17,11 @@ type Address struct {
 
 // struct used to list all products
 type ResponseProducts struct {
-	Image     string `json:"image"`
-	ModelName string `json:"modelname"`
-	BrandName string `json:"brandname"`
+	ID           uint   `json:"id"`
+	Image        string `json:"image"`
+	ModelName    string `json:"modelname"`
+	BrandName    string `json:"brandname"`
+	CategoryName string `json:"categoryname"`
 }
 
 // struct used to view a particular product details
@@ -53,14 +56,15 @@ type ResponseUserDetails struct {
 
 // struct used to view cart
 type ResViewCart struct {
-	Image     string `json:"image"`
-	ModelName string `json:"modelname"`
-	Price     uint   `json:"price"`
-	BrandName string `json:"brandname"`
-	Size      string `json:"size"`
-	Colour    string `json:"colour"`
-	Quantity  uint   `json:"quantity"`
-	Total     uint   `json:"total"`
+	Image      string `json:"image"`
+	ModelName  string `json:"modelname"`
+	Price      uint   `json:"price"`
+	BrandName  string `json:"brandname"`
+	Size       string `json:"size"`
+	Colour     string `json:"colour"`
+	Quantity   uint   `json:"quantity"`
+	Percentage int    `json:"discountpercentage"`
+	Total      uint   `json:"total"`
 }
 
 type ResCartItems struct {
@@ -92,6 +96,7 @@ type ResponseOrderDetails struct {
 	BrandName     string     `json:"brandname"`
 	Size          string     `json:"size"`
 	Colour        string     `json:"colour"`
+	Percentage    int        `json:"discountpercentage"`
 	Quantity      uint       `json:"quantity"`
 	Status        string     `json:"status"`
 	DeliveredDate *time.Time `json:"delivereddate"`
@@ -122,12 +127,19 @@ type RazorpayOrder struct {
 
 //salesreport
 type ResSalesReport struct {
-	Month       string    `json:"month"`
-	UserID      uint      `json:"userid"`
-	FirstName   string    `json:"firstname"`
-	Email       string    `json:"email"`
-	OrderID     uint      `json:"orderid"`
-	PlacedDate  time.Time `json:"placeddate"`
-	GrandTotal  uint      `json:"grand_total"`
-	PaymentMode string    `json:"paymentmode"`
+	UserID          uint      `json:"userid"`
+	FirstName       string    `json:"firstname"`
+	Email           string    `json:"email"`
+	ProductDetailID uint      `json:"productdetailid"`
+	ProductName     string    `json:"productname"`
+	Quantity        uint      `json:"quantity"`
+	OrderID         uint      `json:"orderid"`
+	PlacedDate      time.Time `json:"placeddate"`
+	PaymentMode     string    `json:"paymentmode"`
+}
+
+type ResWidgets struct {
+	Numberofblockedusers  int `json:"numberofblockedusers"`
+	Numberofproducts      int `json:"numberofproducts"`
+	Numberofpendingorders int `json:"numberofpendingorders"`
 }

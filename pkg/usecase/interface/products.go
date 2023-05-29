@@ -21,4 +21,7 @@ type ProductUseCase interface {
 	AddProductDetail(context.Context, domain.ProductDetails) error
 	EditProductDetail(context.Context, domain.ProductDetails, string) error
 	DeleteProductDetail(ctx context.Context, id string) error
+	ProductsByCategory(string, utils.Pagination) ([]utils.ResponseProducts, error)
+	ListAllBrands() ([]utils.ResBrands, error)
+	ProductsByBrands(string, utils.Pagination) ([]utils.ResponseProducts, error)
 }

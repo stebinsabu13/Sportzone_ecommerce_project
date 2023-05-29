@@ -19,13 +19,14 @@ func NewCartRepository(db *gorm.DB) interfaces.CartRepository {
 
 func (c *CartDatabase) ViewCart(userid uint) ([]utils.ResViewCart, error) {
 	var cartdetail []utils.ResViewCart
-	query := `select p.model_name,p.image,pd.price,citm.quantity,citm.total,b.brand_name,osize.size,ocolour.colour from products p
+	query := `select p.model_name,p.image,pd.price,citm.quantity,citm.total,b.brand_name,osize.size,ocolour.colour,d.percentage from products p
 	inner join product_details pd on p.id=pd.product_id
 	inner join cart_items citm on pd.id=citm.product_detail_id
 	left join brands b on p.brand_id=b.id
 	inner join carts cs on citm.cart_id=cs.id
 	inner join available_sizes osize on osize.id=pd.available_size_id
-	inner join available_colours ocolour on ocolour.id=pd.available_colour_id where cs.user_id=?`
+	inner join available_colours ocolour on ocolour.id=pd.available_colour_id
+	left join discounts d on pd.discount_id=d.id where cs.user_id=?`
 	err := c.DB.Raw(query, userid).Scan(&cartdetail).Error
 	if err != nil {
 		return cartdetail, err
@@ -41,12 +42,16 @@ func (c *CartDatabase) FindCartById(userid uint) (domain.Cart, error) {
 	return cart, nil
 }
 
-func (c *CartDatabase) FindProductDetailById(id string) (domain.ProductDetails, error) {
+func (c *CartDatabase) FindProductDetailById(id string) (domain.ProductDetails, int, error) {
 	var productdetail domain.ProductDetails
+	var discount int
 	if err := c.DB.Where("id=?", id).Find(&productdetail).Error; err != nil {
-		return productdetail, err
+		return productdetail, discount, err
 	}
-	return productdetail, nil
+	if err := c.DB.Model(&domain.Discount{}).Where("id=?", productdetail.DiscountID).Select("percentage").Scan(&discount).Error; err != nil {
+		return productdetail, discount, err
+	}
+	return productdetail, discount, nil
 }
 
 func (c *CartDatabase) FindProductExsist(id string, cartid uint) (domain.CartItem, error) {

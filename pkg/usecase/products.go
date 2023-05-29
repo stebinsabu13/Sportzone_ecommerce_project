@@ -82,3 +82,15 @@ func (c *productUseCase) DeleteProductDetail(ctx context.Context, id string) err
 	err := c.Productrepo.DeleteProductDetail(ctx, id)
 	return err
 }
+
+func (c *productUseCase) ProductsByCategory(id string, pagination utils.Pagination) ([]utils.ResponseProducts, error) {
+	return c.Productrepo.ProductsByCategory(id, pagination)
+}
+
+func (c *productUseCase) ListAllBrands() ([]utils.ResBrands, error) {
+	return c.Productrepo.ListAllBrands()
+}
+
+func (c *productUseCase) ProductsByBrands(id string, pagination utils.Pagination) ([]utils.ResponseProducts, error) {
+	return c.Productrepo.ProductsByBrands(id, pagination)
+}

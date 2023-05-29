@@ -142,3 +142,13 @@ func (c *userDatabase) ChangePassword(ctx context.Context, newpassword string, m
 	}
 	return nil
 }
+
+func (c *userDatabase) ListAllCategories(ctx context.Context) ([]utils.ResponseCategory, error) {
+	var categories []utils.ResponseCategory
+	query := `select category_name from categories where deleted_at is null`
+	result := c.DB.Raw(query).Scan(&categories).Error
+	if result != nil {
+		return categories, errors.New("failed to get categories")
+	}
+	return categories, nil
+}

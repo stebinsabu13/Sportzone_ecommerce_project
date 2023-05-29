@@ -87,10 +87,24 @@ func (c *adminDatabase) DeleteCategory(ctx context.Context, id string) error {
 func (c *adminDatabase) GetFullSalesReport(reqData utils.SalesReport) ([]utils.ResSalesReport, error) {
 	var salesreport []utils.ResSalesReport
 	if reqData.Frequency == "MONTHLY" {
-		result := c.DB.Where("YEAR(created_at) = ? AND MONTH(created_at) = ?", reqData.Year, reqData.Month).Select("")
+		result := c.DB.Model(&domain.Order{}).Where("YEAR(orders.placed_date) = ? AND MONTH(orders.placed_date) = ?", reqData.Year, reqData.Month).Joins("JOIN order_details on orders.id=order_details.order_id").Joins("JOIN product_details on product_details.id=order_details.product_detail_id").Joins("JOIN products on products.id=product_details.product_id").Joins("JOIN payment_modes on payment_modes.id=orders.payment_id").Joins("JOIN users on orders.user_id=users.id").Select("users.id as userid,users.first_name,users.email,order_details.product_detail_id as productdetailid,products.model_name as productname,order_details.quantity,orders.id as orderid,orders.placed_date,payment_modes.mode as paymentmode").Scan(&salesreport)
 		if result.Error != nil {
 			return salesreport, result.Error
 		}
 	}
 	return salesreport, nil
+}
+
+func (c *adminDatabase) Widgets() (utils.ResWidgets, error) {
+	var widgets utils.ResWidgets
+	if err := c.DB.Model(&domain.User{}).Select("count(users)").Where("block='t'").Scan(&widgets.Numberofblockedusers).Error; err != nil {
+		return widgets, err
+	}
+	if err := c.DB.Model(&domain.OrderDetails{}).Select("count(order_details)").Where("delivered_date is null and cancelled_date is null").Scan(&widgets.Numberofpendingorders).Error; err != nil {
+		return widgets, err
+	}
+	if err := c.DB.Model(&domain.ProductDetails{}).Select("count(product_details)").Where("deleted_at is null").Scan(&widgets.Numberofproducts).Error; err != nil {
+		return widgets, err
+	}
+	return widgets, nil
 }

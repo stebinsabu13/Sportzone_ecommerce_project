@@ -15,6 +15,7 @@ type OrderRepository interface {
 	AddtoOrders([]utils.ResCartItems, domain.Order) error
 	FindOrderitem(uint) (domain.OrderDetails, time.Time, error)
 	CancelOrder(domain.OrderDetails) error
+	ReturnOrder(domain.OrderDetails) error
 
 	//Admin Repository
 

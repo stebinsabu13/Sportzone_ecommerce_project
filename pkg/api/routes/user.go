@@ -35,19 +35,31 @@ func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productH
 		product := home.Group("/products")
 		{
 			product.GET("/", productHandler.FindAllProducts)
-			product.GET("/:id", productHandler.FindDetailsProductById)
+			product.GET("/:productid", productHandler.FindDetailsProductById)
+		}
+		filter := home.Group("/filter")
+		{
+			filter.GET("/category", userHandler.ListAllCategories)
+			filter.GET("/category/:categoryid/products", productHandler.ProductsByCategory)
+			filter.GET("/brands", productHandler.ListAllBrands)
+			filter.GET("/brands/:brandid/products", productHandler.ProductsByBrands)
 		}
 		profile := home.Group("/profile")
 		{
 			profile.GET("/", userHandler.ShowUserDetails)
-			profile.POST("/add/address", userHandler.AddAddress)
 			profile.PATCH("/edit/details", userHandler.UpdateProfile)
+			address := profile.Group("/address")
+			{
+				address.GET("/", userHandler.ShowAllAddress)
+				address.POST("/add", userHandler.AddAddress)
+			}
 		}
 		orders := home.Group("/orders")
 		{
 			orders.GET("/", orderHandler.ShowOrders)
 			orders.GET("/detail", orderHandler.ShowOrderDetail)
 			orders.PATCH("/cancel", orderHandler.CancelOrder)
+			orders.PATCH("/return", orderHandler.ReturnOrder)
 		}
 		cart := home.Group("/cart")
 		{
@@ -60,5 +72,9 @@ func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productH
 			checkout.GET("/add", orderHandler.AddtoOrders)
 			checkout.GET("/success", orderHandler.RazorpaymentSuccess)
 		}
+		// wallet:=home.Group("/wallet")
+		// {
+		// 	wallet.
+		// }
 	}
 }

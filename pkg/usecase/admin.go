@@ -54,3 +54,7 @@ func (c *adminUseCase) DeleteCategory(ctx context.Context, id string) error {
 func (c *adminUseCase) GetFullSalesReport(reqData utils.SalesReport) ([]utils.ResSalesReport, error) {
 	return c.adminrepo.GetFullSalesReport(reqData)
 }
+
+func (c *adminUseCase) Widgets() (utils.ResWidgets, error) {
+	return c.adminrepo.Widgets()
+}
