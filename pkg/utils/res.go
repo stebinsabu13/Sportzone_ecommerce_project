@@ -127,15 +127,18 @@ type RazorpayOrder struct {
 
 //salesreport
 type ResSalesReport struct {
-	UserID          uint      `json:"userid"`
-	FirstName       string    `json:"firstname"`
-	Email           string    `json:"email"`
-	ProductDetailID uint      `json:"productdetailid"`
-	ProductName     string    `json:"productname"`
-	Quantity        uint      `json:"quantity"`
-	OrderID         uint      `json:"orderid"`
-	PlacedDate      time.Time `json:"placeddate"`
-	PaymentMode     string    `json:"paymentmode"`
+	UserID             uint      `json:"userid" gorm:"column:userid"`
+	FirstName          string    `json:"firstname"`
+	Email              string    `json:"email"`
+	ProductDetailID    uint      `json:"productdetailid" gorm:"column:productdetailid"`
+	ProductName        string    `json:"productname" gorm:"column:productname"`
+	Price              uint      `json:"price"`
+	DiscountPercentage uint      `json:"discountpercentage" gorm:"column:discountpercentage"`
+	Quantity           uint      `json:"quantity"`
+	OrderID            uint      `json:"orderid" gorm:"column:orderid"`
+	PlacedDate         time.Time `json:"placeddate"`
+	PaymentMode        string    `json:"paymentmode" gorm:"column:paymentmode"`
+	OrderStatus        string    `json:"orderstatus" gorm:"column:orderstatus"`
 }
 
 type ResWidgets struct {

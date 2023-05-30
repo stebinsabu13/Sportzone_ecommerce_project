@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"encoding/csv"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -221,7 +223,7 @@ func (cr *AdminHandler) DeleteCategory(c *gin.Context) {
 
 func (cr *AdminHandler) FullSalesReport(c *gin.Context) {
 	// time
-	monthInt, err1 := strconv.Atoi(c.Query("month"))
+	monthInt, err1 := strconv.Atoi(c.DefaultQuery("month", "1"))
 	month := time.Month(monthInt)
 	year, err2 := strconv.Atoi(c.Query("year"))
 	frequency := c.Query("frequency")
@@ -253,9 +255,69 @@ func (cr *AdminHandler) FullSalesReport(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"Report": salesreport,
-	})
+	if salesreport == nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "there is no sales report on this period",
+		})
+	} else {
+		c.Header("Content-Type", "text/csv")
+		c.Header("Content-Disposition", "attachment;filename=ecommercesalesreport.csv")
+
+		csvWriter := csv.NewWriter(c.Writer)
+		headers := []string{
+			"UserID", "FirstName", "Email",
+			"ProductDetailID", "ProductName", "Price",
+			"DiscountPercentage", "Quantity", "OrderID",
+			"PlacedDate", "PaymentMode", "OrderStatus", "Total",
+		}
+
+		if err := csvWriter.Write(headers); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		grandtotal := 0
+		for _, sales := range salesreport {
+			discount := (sales.DiscountPercentage * sales.Price) / 100
+			total := sales.Quantity * (sales.Price - discount)
+			row := []string{
+				fmt.Sprintf("%v", sales.UserID),
+				sales.FirstName,
+				sales.Email,
+				fmt.Sprintf("%v", sales.ProductDetailID),
+				sales.ProductName,
+				fmt.Sprintf("%v", sales.Price),
+				fmt.Sprintf("%v", sales.DiscountPercentage),
+				fmt.Sprintf("%v", sales.Quantity),
+				fmt.Sprintf("%v", sales.OrderID),
+				sales.PlacedDate.Format("2006-01-02 15:04:05"),
+				sales.PaymentMode,
+				sales.OrderStatus,
+				fmt.Sprintf("%v", total),
+			}
+
+			if err := csvWriter.Write(row); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
+			if sales.PaymentMode == "Razorpay" || sales.PaymentMode == "Wallet" || (sales.PaymentMode == "Cash on Delivery" && sales.OrderStatus == "Delivered") {
+				grandtotal += int(total)
+			}
+		}
+		rowtotal := []string{
+			fmt.Sprintf("Grand Total=%v", grandtotal),
+		}
+		if err := csvWriter.Write(rowtotal); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		csvWriter.Flush()
+	}
 }
 
 func (cr *AdminHandler) Dashboard(c *gin.Context) {

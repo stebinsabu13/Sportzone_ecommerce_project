@@ -87,7 +87,31 @@ func (c *adminDatabase) DeleteCategory(ctx context.Context, id string) error {
 func (c *adminDatabase) GetFullSalesReport(reqData utils.SalesReport) ([]utils.ResSalesReport, error) {
 	var salesreport []utils.ResSalesReport
 	if reqData.Frequency == "MONTHLY" {
-		result := c.DB.Model(&domain.Order{}).Where("YEAR(orders.placed_date) = ? AND MONTH(orders.placed_date) = ?", reqData.Year, reqData.Month).Joins("JOIN order_details on orders.id=order_details.order_id").Joins("JOIN product_details on product_details.id=order_details.product_detail_id").Joins("JOIN products on products.id=product_details.product_id").Joins("JOIN payment_modes on payment_modes.id=orders.payment_id").Joins("JOIN users on orders.user_id=users.id").Select("users.id as userid,users.first_name,users.email,order_details.product_detail_id as productdetailid,products.model_name as productname,order_details.quantity,orders.id as orderid,orders.placed_date,payment_modes.mode as paymentmode").Scan(&salesreport)
+		result := c.DB.Model(&domain.Order{}).Where("EXTRACT(YEAR FROM orders.placed_date) = ? AND EXTRACT(MONTH FROM orders.placed_date) = ?", reqData.Year, reqData.Month).
+			Joins("JOIN order_details od on orders.id=od.order_id").
+			Joins("JOIN product_details pd on pd.id=od.product_detail_id").
+			Joins("JOIN products p on p.id=pd.product_id").
+			Joins("JOIN payment_modes pm on pm.id=orders.payment_id").
+			Joins("JOIN users u on orders.user_id=u.id").
+			Joins("JOIN order_statuses os on os.id=od.order_status_id").
+			Joins("JOIN discounts d on d.id=pd.discount_id").
+			Select("u.id as userid,u.first_name,u.email,od.product_detail_id as productdetailid,p.model_name as productname,od.quantity,orders.id as orderid,orders.placed_date,pm.mode as paymentmode,pd.price,d.percentage as discountpercentage,os.status as orderstatus").
+			Order("orders.placed_date DESC").Scan(&salesreport)
+		if result.Error != nil {
+			return salesreport, result.Error
+		}
+	}
+	if reqData.Frequency == "YEARLY" {
+		result := c.DB.Model(&domain.Order{}).Where("EXTRACT(YEAR FROM orders.placed_date) = ?", reqData.Year).
+			Joins("JOIN order_details od on orders.id=od.order_id").
+			Joins("JOIN product_details pd on pd.id=od.product_detail_id").
+			Joins("JOIN products p on p.id=pd.product_id").
+			Joins("JOIN payment_modes pm on pm.id=orders.payment_id").
+			Joins("JOIN users u on orders.user_id=u.id").
+			Joins("JOIN order_statuses os on os.id=od.order_status_id").
+			Joins("JOIN discounts d on d.id=pd.discount_id").
+			Select("u.id as userid,u.first_name,u.email,od.product_detail_id as productdetailid,p.model_name as productname,od.quantity,orders.id as orderid,orders.placed_date,pm.mode as paymentmode,pd.price,d.percentage as discountpercentage,os.status as orderstatus").
+			Order("orders.placed_date DESC").Scan(&salesreport)
 		if result.Error != nil {
 			return salesreport, result.Error
 		}
