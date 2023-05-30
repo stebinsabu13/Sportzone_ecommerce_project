@@ -16,9 +16,9 @@ type OrderDetails struct {
 	ID               uint       `json:"id" gorm:"primarykey;auto_increment"`
 	OrderID          uint       `json:"orderid" gorm:"not null"`
 	OrderStatusID    uint       `json:"orderstatusid" gorm:"not null"`
-	DeliveredDate    *time.Time `json:"delivereddate" gorm:"type:null"`
-	CancelledDate    *time.Time `json:"cancelleddate" gorm:"type:null"`
-	ReturnSubmitDate *time.Time `json:"returnsubmitdate" gorm:"type:null"`
+	DeliveredDate    *time.Time `json:"delivereddate"`
+	CancelledDate    *time.Time `json:"cancelleddate"`
+	ReturnSubmitDate *time.Time `json:"returnsubmitdate"`
 	ProductDetailID  uint       `json:"productdetailsid"`
 	Quantity         uint       `json:"quantity" gorm:"not null"`
 }

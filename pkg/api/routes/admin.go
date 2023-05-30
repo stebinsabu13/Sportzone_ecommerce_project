@@ -57,5 +57,9 @@ func AdminRoutes(api *gin.RouterGroup, adminHandler *handler.AdminHandler, produ
 		{
 			dashboard.GET("/", adminHandler.Dashboard)
 		}
+		coupon := home.Group("/coupon")
+		{
+			coupon.POST("/add", adminHandler.AddCoupon)
+		}
 	}
 }

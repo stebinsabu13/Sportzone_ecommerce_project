@@ -1,6 +1,10 @@
 package domain
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Category struct {
 	gorm.Model
@@ -16,6 +20,7 @@ type Product struct {
 	CategoryID uint     `json:"categoryid" gorm:"not null"`
 	Category   Category `gorm:"foreignkey:CategoryID"`
 }
+
 type ProductDetails struct {
 	gorm.Model
 	Price             uint            `json:"price" gorm:"not null"`
@@ -28,8 +33,6 @@ type ProductDetails struct {
 	Product           Product         `gorm:"foreignkey:ProductID"`
 	DiscountID        uint            `json:"discountid"`
 	Discount          Discount        `gorm:"foreignkey:DiscountID"`
-	CouponID          uint            `json:"couponid"`
-	Coupon            Coupon          `gorm:"foreignkey:CouponID"`
 }
 
 type Brand struct {
@@ -38,8 +41,26 @@ type Brand struct {
 }
 
 type Coupon struct {
-	ID         uint `json:"id" gorm:"primarykey;auto_increment"`
-	Percentage uint `json:"percentage" gorm:"not null"`
+	ID                 uint      `json:"id" gorm:"primarykey;auto_increment"`
+	CouponCode         string    `json:"couponcode" gorm:"uniqueIndex;not null"`
+	CouponType         uint      `json:"coupontype" gorm:"not null"`
+	Discount           uint      `json:"discount" gorm:"not null"`
+	UsageLimit         uint      `json:"usagelimit" gorm:"default:1"`
+	ExpirationDate     time.Time `json:"expirationdate" gorm:"not null"`
+	MinimumOrderAmount *uint     `json:"minimumorderamount"`
+	ProductID          *int      `json:"productid"`
+}
+
+type CouponType struct {
+	ID   uint   `json:"id" gorm:"primarykey;auto_increment"`
+	Type string `json:"type" gorm:"not null"`
+}
+
+type CouponUsage struct {
+	ID       uint `json:"id" gorm:"primarykey;auto_increment"`
+	UserID   uint `json:"userid" gorm:"not null"`
+	CouponID uint `json:"couponid" gorm:"not null"`
+	Usage    uint `json:"usage" gorm:"not null"`
 }
 
 type Discount struct {

@@ -66,9 +66,10 @@ func (c *OrderDatabase) AddtoOrders(items []utils.ResCartItems, order domain.Ord
 		}
 		current := time.Now()
 		wallet := domain.Wallet{
-			UserID:      order.UserID,
-			DebitedDate: &current,
-			Amount:      -1 * int(order.GrandTotal),
+			UserID:       order.UserID,
+			CreditedDate: nil,
+			DebitedDate:  &current,
+			Amount:       -1 * int(order.GrandTotal),
 		}
 		if err := tx.Create(&wallet).Error; err != nil {
 			tx.Rollback()
@@ -189,6 +190,7 @@ func (c *OrderDatabase) CancelOrder(ctx context.Context, item domain.OrderDetail
 		wallet := domain.Wallet{
 			UserID:       userid.(uint),
 			CreditedDate: &current,
+			DebitedDate:  nil,
 			Amount:       int(item.Quantity) * (int(prodetail.Price) - discount),
 		}
 		if err := tx.Create(&wallet).Error; err != nil {
@@ -262,6 +264,7 @@ func (c *OrderDatabase) UpdateStatus(item domain.OrderDetails) error {
 		wallet := domain.Wallet{
 			UserID:       userid,
 			CreditedDate: &current,
+			DebitedDate:  nil,
 			Amount:       int(item.Quantity) * (int(prodetail.Price) - discount),
 		}
 		if err := tx.Create(&wallet).Error; err != nil {
@@ -274,4 +277,49 @@ func (c *OrderDatabase) UpdateStatus(item domain.OrderDetails) error {
 		return err
 	}
 	return nil
+}
+
+func (c *OrderDatabase) FindCoupon(code string) (domain.Coupon, error) {
+	var coupon domain.Coupon
+	result := c.DB.Model(&domain.Coupon{}).Where("coupon_code=?", code).Find(&coupon)
+	if result.Error != nil {
+		if result.RowsAffected == 0 {
+			return coupon, errors.New("coupon doesn't exsist")
+		}
+	}
+	return coupon, nil
+}
+
+func (c *OrderDatabase) ValidateCoupon(coupon domain.Coupon, cartitems []utils.ResCartItems, grandtotal *int) bool {
+	prodetail := struct {
+		ProductId uint
+		Price     uint
+	}{
+		ProductId: 0,
+		Price:     0,
+	}
+	if *coupon.MinimumOrderAmount > uint(*grandtotal) {
+		return false
+	}
+	if time.Now().After(coupon.ExpirationDate) {
+		return false
+	}
+	if *coupon.ProductID != 0 {
+		for _, v := range cartitems {
+			if err := c.DB.Model(&domain.ProductDetails{}).Where("id=?", v.ProductDetailID).Select("product_id,price").Scan(&prodetail).Error; err != nil {
+				return false
+			}
+			if *coupon.ProductID == int(prodetail.ProductId) {
+				if coupon.CouponType == 1 {
+					discount := (prodetail.Price * coupon.Discount) / 100
+					*grandtotal -= int(discount)
+				} else if coupon.CouponType == 2 {
+					*grandtotal -= int(coupon.Discount)
+				}
+				return false
+			}
+		}
+		return false
+	}
+	return true
 }

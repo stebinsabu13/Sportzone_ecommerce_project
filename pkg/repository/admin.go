@@ -132,3 +132,10 @@ func (c *adminDatabase) Widgets() (utils.ResWidgets, error) {
 	}
 	return widgets, nil
 }
+
+func (c *adminDatabase) AddCoupon(coupon domain.Coupon) error {
+	if err := c.DB.Create(&coupon).Error; err != nil {
+		return err
+	}
+	return nil
+}

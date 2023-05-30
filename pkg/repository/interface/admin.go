@@ -17,4 +17,5 @@ type AdminRepository interface {
 	DeleteCategory(ctx context.Context, id string) error
 	GetFullSalesReport(utils.SalesReport) ([]utils.ResSalesReport, error)
 	Widgets() (utils.ResWidgets, error)
+	AddCoupon(domain.Coupon) error
 }

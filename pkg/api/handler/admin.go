@@ -332,3 +332,38 @@ func (cr *AdminHandler) Dashboard(c *gin.Context) {
 		"Widgets": reswidgets,
 	})
 }
+
+func (cr *AdminHandler) AddCoupon(c *gin.Context) {
+	var couponBody utils.BodyAddCoupon
+	if err := c.BindJSON(&couponBody); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	date, err := time.Parse("2006-01-02", couponBody.ExpirationDate)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	coupon := domain.Coupon{
+		CouponCode:         couponBody.Code,
+		CouponType:         couponBody.Type,
+		Discount:           couponBody.Discount,
+		UsageLimit:         couponBody.UsageLimit,
+		ExpirationDate:     date,
+		MinimumOrderAmount: couponBody.MinOrderAmount,
+		ProductID:          couponBody.ProductID,
+	}
+	if err := cr.AdminUseCase.AddCoupon(coupon); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success": "coupon added",
+	})
+}

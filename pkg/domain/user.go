@@ -37,7 +37,7 @@ type PaymentMode struct {
 type Wallet struct {
 	ID           uint       `json:"id" gorm:"primarykey;auto_increment"`
 	UserID       uint       `json:"userid" gorm:"not null"`
-	CreditedDate *time.Time `json:"crediteddate" gorm:"type:null"`
-	DebitedDate  *time.Time `json:"debiteddate" gorm:"type:null"`
+	CreditedDate *time.Time `json:"crediteddate"`
+	DebitedDate  *time.Time `json:"debiteddate"`
 	Amount       int        `json:"amount" gorm:"not null"`
 }

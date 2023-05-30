@@ -58,3 +58,7 @@ func (c *adminUseCase) GetFullSalesReport(reqData utils.SalesReport) ([]utils.Re
 func (c *adminUseCase) Widgets() (utils.ResWidgets, error) {
 	return c.adminrepo.Widgets()
 }
+
+func (c *adminUseCase) AddCoupon(coupon domain.Coupon) error {
+	return c.adminrepo.AddCoupon(coupon)
+}
