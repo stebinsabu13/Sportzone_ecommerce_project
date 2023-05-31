@@ -17,7 +17,7 @@ type OrderRepository interface {
 	CancelOrder(context.Context, domain.OrderDetails) error
 	ReturnOrder(domain.OrderDetails) error
 	FindCoupon(string) (domain.Coupon, error)
-	ValidateCoupon(domain.Coupon, []utils.ResCartItems, *int) bool
+	ValidateCoupon(domain.Coupon, []utils.ResCartItems, *domain.Cart) error
 
 	//Admin Repository
 

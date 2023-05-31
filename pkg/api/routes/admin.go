@@ -60,6 +60,10 @@ func AdminRoutes(api *gin.RouterGroup, adminHandler *handler.AdminHandler, produ
 		coupon := home.Group("/coupon")
 		{
 			coupon.POST("/add", adminHandler.AddCoupon)
+			coupon.GET("/", adminHandler.GetAllCoupons)
+			coupon.PATCH("/update", adminHandler.UpdateCoupon)
+			coupon.GET("/:couponid", adminHandler.GetCouponByID)
+			coupon.DELETE("/delete/:couponid", adminHandler.DeleteCoupon)
 		}
 	}
 }

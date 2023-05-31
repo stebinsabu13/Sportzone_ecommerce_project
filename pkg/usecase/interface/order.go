@@ -10,9 +10,10 @@ type OrderUseCase interface {
 	Orders(ctx context.Context, id uint) ([]utils.ResOrders, error)
 	OrderDetail(uint) ([]utils.ResponseOrderDetails, error)
 	AddtoOrders(uint, uint, uint) error
-	Razorpayment(uint, string) (razorpayOrder utils.RazorpayOrder, err error)
+	Razorpayment(uint) (utils.RazorpayOrder, error)
 	CancelOrder(context.Context, uint, uint) error
 	ReturnOrder(uint, uint) error
+	ValidateCoupon(uint, string) error
 
 	//Admin UseCase
 

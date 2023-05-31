@@ -62,3 +62,19 @@ func (c *adminUseCase) Widgets() (utils.ResWidgets, error) {
 func (c *adminUseCase) AddCoupon(coupon domain.Coupon) error {
 	return c.adminrepo.AddCoupon(coupon)
 }
+
+func (c *adminUseCase) GetAllCoupons(pagination utils.Pagination) ([]domain.Coupon, error) {
+	return c.adminrepo.GetAllCoupons(pagination)
+}
+
+func (c *adminUseCase) UpdateCoupon(coupon domain.Coupon, couponid string) error {
+	return c.adminrepo.UpdateCoupon(coupon, couponid)
+}
+
+func (c *adminUseCase) GetCouponByID(id string) (domain.Coupon, error) {
+	return c.adminrepo.GetCouponByID(id)
+}
+
+func (c *adminUseCase) DeleteCoupon(id string) error {
+	return c.adminrepo.DeleteCoupon(id)
+}

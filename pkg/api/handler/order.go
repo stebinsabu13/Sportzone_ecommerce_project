@@ -21,7 +21,7 @@ func NewOrderHandler(usecase services.OrderUseCase) *OrderHandler {
 }
 
 func (cr *OrderHandler) AddtoOrders(c *gin.Context) {
-	code := c.PostForm("code")
+	code := c.DefaultQuery("code", "")
 	addressid, _ := strconv.Atoi(c.Query("addressid"))
 	paymentid, _ := strconv.Atoi(c.Query("paymentid"))
 	id, ok := c.Get("user-id")
@@ -31,8 +31,14 @@ func (cr *OrderHandler) AddtoOrders(c *gin.Context) {
 		})
 		return
 	}
+	if err := cr.orderUseCase.ValidateCoupon(id.(uint), code); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 	if paymentid == 2 {
-		body, err := cr.orderUseCase.Razorpayment(id.(uint), code)
+		body, err := cr.orderUseCase.Razorpayment(id.(uint))
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),

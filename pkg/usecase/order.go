@@ -56,29 +56,11 @@ func (c *orderUseCase) AddtoOrders(addressid, paymentid, userid uint) error {
 	return nil
 }
 
-func (c *orderUseCase) Razorpayment(userid uint, code string) (razorpayOrder utils.RazorpayOrder, err error) {
-	var body utils.RazorpayOrder
+func (c *orderUseCase) Razorpayment(userid uint) (utils.RazorpayOrder, error) {
+	var razorpayOrder utils.RazorpayOrder
 	cart, err := c.cartRepo.FindCartById(userid)
 	if err != nil {
-		return body, err
-	}
-	if code != "" {
-		coupon, err2 := c.orderrepo.FindCoupon(code)
-		if err2 != nil {
-			return body, err2
-		}
-		cartitems, err1 := c.orderrepo.Findcartitems(cart.ID)
-		if err1 != nil {
-			return body, err1
-		}
-		if c.orderrepo.ValidateCoupon(coupon, cartitems, &cart.GrandTotal) {
-			if coupon.CouponType == 1 {
-				discount := (uint(cart.GrandTotal) * coupon.Discount) / 100
-				cart.GrandTotal -= int(discount)
-			} else if coupon.CouponType == 2 {
-				cart.GrandTotal -= int(coupon.Discount)
-			}
-		}
+		return razorpayOrder, err
 	}
 	// generate razorpay order
 	//razorpay amount is caluculate on pisa for india so make the actual price into paisa
@@ -178,6 +160,27 @@ func (c *orderUseCase) UpdateStatus(id, statusid uint) error {
 		}
 		orderitem.OrderStatusID = statusid
 		if err := c.orderrepo.UpdateStatus(orderitem); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *orderUseCase) ValidateCoupon(userid uint, code string) error {
+	cart, err := c.cartRepo.FindCartById(userid)
+	if err != nil {
+		return err
+	}
+	if code != "" {
+		coupon, err2 := c.orderrepo.FindCoupon(code)
+		if err2 != nil {
+			return err2
+		}
+		cartitems, err1 := c.orderrepo.Findcartitems(cart.ID)
+		if err1 != nil {
+			return err1
+		}
+		if err = c.orderrepo.ValidateCoupon(coupon, cartitems, &cart); err != nil {
 			return err
 		}
 	}

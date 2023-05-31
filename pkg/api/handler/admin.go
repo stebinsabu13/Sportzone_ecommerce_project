@@ -27,11 +27,6 @@ func NewAdminHandler(usecase services.AdminUseCase) *AdminHandler {
 }
 
 func (cr *AdminHandler) LoginHandler(c *gin.Context) {
-	_, err := c.Cookie("admin-token")
-	if err == nil {
-		c.Redirect(http.StatusFound, "/admin/home")
-		return
-	}
 	var body utils.BodyLogin
 	if err := c.BindJSON(&body); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
@@ -365,5 +360,95 @@ func (cr *AdminHandler) AddCoupon(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"Success": "coupon added",
+	})
+}
+
+func (cr *AdminHandler) GetAllCoupons(c *gin.Context) {
+	page, err := strconv.Atoi(c.Query("page"))
+	limit, err1 := strconv.Atoi(c.Query("limit"))
+	err = errors.Join(err, err1)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	offset := (page - 1) * limit
+	pagination := utils.Pagination{
+		Offset: uint(offset),
+		Limit:  uint(limit),
+	}
+	coupons, err := cr.AdminUseCase.GetAllCoupons(pagination)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Coupons": coupons,
+	})
+}
+
+func (cr *AdminHandler) UpdateCoupon(c *gin.Context) {
+	couponid := c.Query("couponid")
+	var couponBody utils.BodyAddCoupon
+	if err := c.BindJSON(&couponBody); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	date, err := time.Parse("2006-01-02", couponBody.ExpirationDate)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	coupon := domain.Coupon{
+		CouponCode:         couponBody.Code,
+		CouponType:         couponBody.Type,
+		Discount:           couponBody.Discount,
+		UsageLimit:         couponBody.UsageLimit,
+		ExpirationDate:     date,
+		MinimumOrderAmount: couponBody.MinOrderAmount,
+		ProductID:          couponBody.ProductID,
+	}
+	if err := cr.AdminUseCase.UpdateCoupon(coupon, couponid); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success": "coupon updated",
+	})
+}
+
+func (cr *AdminHandler) GetCouponByID(c *gin.Context) {
+	couponid := c.Param("couponid")
+	coupon, err := cr.AdminUseCase.GetCouponByID(couponid)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success": coupon,
+	})
+}
+
+func (cr *AdminHandler) DeleteCoupon(c *gin.Context) {
+	couponid := c.Param("couponid")
+	if err := cr.AdminUseCase.DeleteCoupon(couponid); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success": "Deleted",
 	})
 }

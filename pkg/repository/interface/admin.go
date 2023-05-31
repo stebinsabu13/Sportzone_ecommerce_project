@@ -18,4 +18,8 @@ type AdminRepository interface {
 	GetFullSalesReport(utils.SalesReport) ([]utils.ResSalesReport, error)
 	Widgets() (utils.ResWidgets, error)
 	AddCoupon(domain.Coupon) error
+	GetAllCoupons(utils.Pagination) ([]domain.Coupon, error)
+	UpdateCoupon(domain.Coupon, string) error
+	GetCouponByID(string) (domain.Coupon, error)
+	DeleteCoupon(string) error
 }

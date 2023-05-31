@@ -290,7 +290,10 @@ func (c *OrderDatabase) FindCoupon(code string) (domain.Coupon, error) {
 	return coupon, nil
 }
 
-func (c *OrderDatabase) ValidateCoupon(coupon domain.Coupon, cartitems []utils.ResCartItems, grandtotal *int) bool {
+func (c *OrderDatabase) ValidateCoupon(coupon domain.Coupon, cartitems []utils.ResCartItems, cart *domain.Cart) error {
+	tx := c.DB.Begin()
+	var useCount uint
+	var found bool
 	prodetail := struct {
 		ProductId uint
 		Price     uint
@@ -298,28 +301,74 @@ func (c *OrderDatabase) ValidateCoupon(coupon domain.Coupon, cartitems []utils.R
 		ProductId: 0,
 		Price:     0,
 	}
-	if *coupon.MinimumOrderAmount > uint(*grandtotal) {
-		return false
+	if coupon.MinimumOrderAmount != nil && *coupon.MinimumOrderAmount > uint(cart.GrandTotal) {
+		return errors.New("requires a minimum amount for the coupon to apply")
 	}
 	if time.Now().After(coupon.ExpirationDate) {
-		return false
+		return errors.New("the coupon had expired")
 	}
-	if *coupon.ProductID != 0 {
+	if err := tx.Model(&domain.CouponUsage{}).Where("coupon_id=? and user_id=?", coupon.ID, cart.UserID).Select("usage").Scan(&useCount); err.Error != nil {
+		tx.Rollback()
+		return err.Error
+	} else if err.RowsAffected == 0 {
+		couponusage := domain.CouponUsage{
+			UserID:   cart.UserID,
+			CouponID: coupon.ID,
+			Usage:    0,
+		}
+		if err1 := tx.Create(&couponusage).Error; err1 != nil {
+			tx.Rollback()
+			return err1
+		}
+	}
+	if useCount >= coupon.UsageLimit {
+		return errors.New("coupon usage limit exceeds")
+	}
+	if coupon.ProductID != nil {
 		for _, v := range cartitems {
-			if err := c.DB.Model(&domain.ProductDetails{}).Where("id=?", v.ProductDetailID).Select("product_id,price").Scan(&prodetail).Error; err != nil {
-				return false
+			if useCount >= coupon.UsageLimit {
+				break
+			}
+			if err := tx.Model(&domain.ProductDetails{}).Where("id=?", v.ProductDetailID).Select("product_id,price").Scan(&prodetail).Error; err != nil {
+				tx.Rollback()
+				return err
 			}
 			if *coupon.ProductID == int(prodetail.ProductId) {
+				found = true
 				if coupon.CouponType == 1 {
 					discount := (prodetail.Price * coupon.Discount) / 100
-					*grandtotal -= int(discount)
+					cart.GrandTotal -= int(discount)
 				} else if coupon.CouponType == 2 {
-					*grandtotal -= int(coupon.Discount)
+					cart.GrandTotal -= int(coupon.Discount)
 				}
-				return false
+				useCount++
 			}
 		}
-		return false
+		if !found {
+			return errors.New("this coupon can't be aplied for these products")
+		}
+	} else {
+		for useCount < coupon.UsageLimit {
+			if coupon.CouponType == 1 {
+				discount := (cart.GrandTotal * int(coupon.Discount)) / 100
+				cart.GrandTotal -= int(discount)
+			} else if coupon.CouponType == 2 {
+				cart.GrandTotal -= int(coupon.Discount)
+			}
+			useCount++
+		}
 	}
-	return true
+	if err := tx.Model(&domain.CouponUsage{}).Where("coupon_id=?", coupon.ID).UpdateColumn("usage", useCount).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	if err := tx.Model(&domain.Cart{}).Where("user_id=?", cart.UserID).Updates(cart).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return nil
 }
