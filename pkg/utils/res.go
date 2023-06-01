@@ -144,9 +144,10 @@ type ResSalesReport struct {
 }
 
 type ResWidgets struct {
-	Numberofblockedusers  int `json:"numberofblockedusers"`
-	Numberofproducts      int `json:"numberofproducts"`
-	Numberofpendingorders int `json:"numberofpendingorders"`
+	Numberofblockedusers     int `json:"numberofblockedusers"`
+	Numberofproducts         int `json:"numberofproducts"`
+	Numberofpendingorders    int `json:"numberofpendingorders"`
+	NumberofreturnSubmission int `json:"numberofreturnsubmission"`
 }
 
 type ResWallet struct {

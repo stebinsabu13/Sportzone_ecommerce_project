@@ -124,10 +124,13 @@ func (c *adminDatabase) Widgets() (utils.ResWidgets, error) {
 	if err := c.DB.Model(&domain.User{}).Select("count(users)").Where("block='t'").Scan(&widgets.Numberofblockedusers).Error; err != nil {
 		return widgets, err
 	}
-	if err := c.DB.Model(&domain.OrderDetails{}).Select("count(order_details)").Where("delivered_date is null and cancelled_date is null").Scan(&widgets.Numberofpendingorders).Error; err != nil {
+	if err := c.DB.Model(&domain.OrderDetails{}).Select("count(order_details)").Where("order_status_id=?", 3).Scan(&widgets.Numberofpendingorders).Error; err != nil {
 		return widgets, err
 	}
 	if err := c.DB.Model(&domain.ProductDetails{}).Select("count(product_details)").Where("deleted_at is null").Scan(&widgets.Numberofproducts).Error; err != nil {
+		return widgets, err
+	}
+	if err := c.DB.Model(&domain.OrderDetails{}).Select("count(order_details)").Where("order_status_id=?", 4).Scan(&widgets.NumberofreturnSubmission).Error; err != nil {
 		return widgets, err
 	}
 	return widgets, nil
