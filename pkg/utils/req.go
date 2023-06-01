@@ -11,6 +11,7 @@ type Otpverify struct {
 	Otp         string `json:"otp" binding:"required"`
 	OtpID       string `json:"otpid"`
 	NewPassword string `json:"newpassword"`
+	ReferalCode string `json:"referalcode"`
 }
 
 type OtpLogin struct {
@@ -47,6 +48,12 @@ type BodyAddCoupon struct {
 	ProductID      *int   `json:"productid"`
 }
 
-// type BodyCoupon struct {
-// 	Code string `json:"code"`
-// }
+type BodySignUpuser struct {
+	FirstName       string `json:"firstname" binding:"required"`
+	LastName        string `json:"lastname" binding:"required"`
+	Email           string `json:"email" binding:"required,email"`
+	MobileNum       string `json:"mobilenum" binding:"required,min=10,max=10"`
+	Password        string `json:"password" binding:"required,eqfield=ConfirmPassword"`
+	ConfirmPassword string `json:"confirmpassword" binding:"required"`
+	ReferalCode     string `json:"referalcode"`
+}

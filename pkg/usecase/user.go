@@ -2,9 +2,11 @@ package usecase
 
 import (
 	"context"
+	"errors"
 
 	domain "github.com/stebinsabu13/ecommerce-api/pkg/domain"
 	interfaces "github.com/stebinsabu13/ecommerce-api/pkg/repository/interface"
+	"github.com/stebinsabu13/ecommerce-api/pkg/support"
 	services "github.com/stebinsabu13/ecommerce-api/pkg/usecase/interface"
 	"github.com/stebinsabu13/ecommerce-api/pkg/utils"
 )
@@ -31,8 +33,24 @@ func (c *userUseCase) FindbyEmail(ctx context.Context, email string) (domain.Use
 func (c *userUseCase) FindbyUserID(ctx context.Context, id uint) (domain.User, error) {
 	return c.userRepo.FindbyUserID(ctx, id)
 }
-func (c *userUseCase) SignUpUser(ctx context.Context, user domain.User) (string, error) {
-	mobile_num, err := c.userRepo.SignUpUser(ctx, user)
+func (c *userUseCase) SignUpUser(ctx context.Context, user utils.BodySignUpuser) (string, error) {
+	if _, err := c.userRepo.FindbyEmail(ctx, user.Email); err == nil {
+		return "", errors.New("user already exsists")
+	}
+	hash, err := support.HashPassword(user.Password)
+	if err != nil {
+		return "", errors.New("error while hashing password")
+	}
+	userrefercode := support.ReferalCodeGenerator()
+	USER := domain.User{
+		FirstName:   user.FirstName,
+		LastName:    user.LastName,
+		Email:       user.Email,
+		MobileNum:   user.MobileNum,
+		Password:    hash,
+		ReferalCode: userrefercode,
+	}
+	mobile_num, err := c.userRepo.SignUpUser(ctx, USER)
 	return mobile_num, err
 }
 
@@ -51,8 +69,8 @@ func (c *userUseCase) ShowAddress(ctx context.Context, id uint) ([]utils.Address
 	return address, err
 }
 
-func (c *userUseCase) UpdateVerify(ctx context.Context, number string) error {
-	err := c.userRepo.UpdateVerify(ctx, number)
+func (c *userUseCase) UpdateVerify(number, refercode string) error {
+	err := c.userRepo.UpdateVerify(number, refercode)
 	return err
 }
 

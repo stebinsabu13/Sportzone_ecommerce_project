@@ -8,7 +8,9 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 
+	"github.com/google/uuid"
 	"github.com/razorpay/razorpay-go"
 	"github.com/stebinsabu13/ecommerce-api/pkg/config"
 	"github.com/stebinsabu13/ecommerce-api/pkg/utils"
@@ -32,11 +34,12 @@ func CheckPasswordHash(password, hash string) bool {
 
 func BuildProfile(details utils.ResponseUsers, address []utils.Address) utils.ResponseUserDetails {
 	return utils.ResponseUserDetails{
-		FirstName: details.FirstName,
-		LastName:  details.LastName,
-		Email:     details.Email,
-		MobileNum: details.MobileNum,
-		Address:   address,
+		FirstName:   details.FirstName,
+		LastName:    details.LastName,
+		Email:       details.Email,
+		MobileNum:   details.MobileNum,
+		ReferalCode: details.ReferalCode,
+		Address:     address,
 	}
 }
 
@@ -116,4 +119,10 @@ func VeifyRazorpayPayment(razorpayOrderID, razorpayPaymentID, razorpaySignature 
 	}
 
 	return nil
+}
+
+func ReferalCodeGenerator() string {
+	uuidObj := uuid.New()
+	uuidString := strings.Replace(uuidObj.String(), "-", "", -1)
+	return uuidString[:6]
 }

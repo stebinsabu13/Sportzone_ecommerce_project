@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	domain "github.com/stebinsabu13/ecommerce-api/pkg/domain"
 	interfaces "github.com/stebinsabu13/ecommerce-api/pkg/repository/interface"
@@ -90,12 +91,11 @@ func (c *userDatabase) SignUpUser(ctx context.Context, user domain.User) (string
 
 func (c *userDatabase) ShowDetails(ctx context.Context, id uint) (utils.ResponseUsers, error) {
 	var user utils.ResponseUsers
-	query := `SELECT first_name,last_name,email,mobile_num from users where id=?`
+	query := `SELECT first_name,last_name,email,mobile_num,referal_code from users where id=?`
 	if err := c.DB.Raw(query, id).Scan(&user).Error; err != nil {
 		return user, err
 	}
 	return user, nil
-
 }
 
 func (c *userDatabase) ShowAddress(ctx context.Context, id uint) ([]utils.Address, error) {
@@ -107,9 +107,44 @@ func (c *userDatabase) ShowAddress(ctx context.Context, id uint) ([]utils.Addres
 	return address, nil
 }
 
-func (c *userDatabase) UpdateVerify(ctx context.Context, number string) error {
-	err := c.DB.Model(&domain.User{}).Where("mobile_num=?", number).UpdateColumn("verified", true).Error
-	if err != nil {
+func (c *userDatabase) UpdateVerify(number, referalcode string) error {
+	var userid1, userid2 uint
+	tx := c.DB.Begin()
+	if err := tx.Model(&domain.User{}).Where("mobile_num=?", number).UpdateColumn("verified", true).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	if referalcode != "" {
+		if err := tx.Model(&domain.User{}).Where("mobile_num=?", number).Select("id").Scan(&userid1).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err := tx.Model(&domain.User{}).Where("referal_code=?", referalcode).Select("id").Scan(&userid2); err.Error != nil {
+			tx.Rollback()
+			return err.Error
+		}
+		current := time.Now()
+		wallet1 := domain.Wallet{
+			UserID:       userid1,
+			CreditedDate: &current,
+			Amount:       10,
+		}
+		if err := tx.Create(&wallet1).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		wallet2 := domain.Wallet{
+			UserID:       userid2,
+			CreditedDate: &current,
+			Amount:       50,
+		}
+		if err := tx.Create(&wallet2).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
 		return err
 	}
 	return nil

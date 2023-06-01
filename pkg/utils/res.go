@@ -38,20 +38,22 @@ type ResponseProductDetails struct {
 
 // struct used to list all users
 type ResponseUsers struct {
-	FirstName string `json:"firstname"`
-	LastName  string `json:"lastname"`
-	Email     string `json:"email"`
-	MobileNum string `json:"mobilenum"`
-	Block     bool   `json:"blocked"`
+	FirstName   string `json:"firstname"`
+	LastName    string `json:"lastname"`
+	Email       string `json:"email"`
+	MobileNum   string `json:"mobilenum"`
+	Block       bool   `json:"blocked"`
+	ReferalCode string `json:"referalcode"`
 }
 
 // struct used to view a particular user detail
 type ResponseUserDetails struct {
-	FirstName string    `json:"firstname"`
-	LastName  string    `json:"lastname"`
-	Email     string    `json:"email"`
-	MobileNum string    `json:"mobilenum"`
-	Address   []Address `json:"address"`
+	FirstName   string    `json:"firstname"`
+	LastName    string    `json:"lastname"`
+	Email       string    `json:"email"`
+	MobileNum   string    `json:"mobilenum"`
+	ReferalCode string    `json:"referalcode"`
+	Address     []Address `json:"address"`
 }
 
 // struct used to view cart

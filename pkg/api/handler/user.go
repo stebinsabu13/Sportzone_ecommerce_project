@@ -14,8 +14,6 @@ import (
 	services "github.com/stebinsabu13/ecommerce-api/pkg/usecase/interface"
 )
 
-var signUp_user domain.User
-
 type UserHandler struct {
 	userUseCase  services.UserUseCase
 	otpUseCase   services.OtpUseCase
@@ -77,33 +75,13 @@ func (cr *UserHandler) LoginHandler(c *gin.Context) {
 }
 
 func (cr *UserHandler) SignUp(c *gin.Context) {
+	var signUp_user utils.BodySignUpuser
 	if err := c.BindJSON(&signUp_user); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-
-	if ok := support.Email_validater(signUp_user.Email); !ok {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"error": "Email format incorrect",
-		})
-		return
-	}
-
-	if ok := support.MobileNum_validater(signUp_user.MobileNum); !ok {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"error": "Not a valid mobile number",
-		})
-		return
-	}
-	if _, err := cr.userUseCase.FindbyEmail(c.Request.Context(), signUp_user.Email); err == nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "User already Exsists",
-		})
-		return
-	}
-	signUp_user.Password, _ = support.HashPassword(signUp_user.Password)
 	mobile_num, err := cr.userUseCase.SignUpUser(c.Request.Context(), signUp_user)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -119,8 +97,9 @@ func (cr *UserHandler) SignUp(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"Success":    "Enter the otp and the responseid",
-		"responseid": respSid,
+		"Success":     "Enter the otp and the responseid",
+		"responseid":  respSid,
+		"referalcode": signUp_user.ReferalCode,
 	})
 }
 
@@ -139,7 +118,7 @@ func (cr *UserHandler) SignupOtpverify(c *gin.Context) {
 		})
 		return
 	}
-	err1 := cr.userUseCase.UpdateVerify(c.Request.Context(), session.MobileNum)
+	err1 := cr.userUseCase.UpdateVerify(session.MobileNum, OTP.ReferalCode)
 	if err1 != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err1.Error(),

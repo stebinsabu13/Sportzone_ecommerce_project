@@ -11,7 +11,7 @@ type UserRepository interface {
 	// FindAll(ctx context.Context) ([]domain.User, error)
 	FindbyEmail(ctx context.Context, email string) (domain.User, error)
 	FindbyUserID(context.Context, uint) (domain.User, error)
-	UpdateVerify(context.Context, string) error
+	UpdateVerify(string, string) error
 	SignUpUser(ctx context.Context, user domain.User) (string, error)
 	FindbyEmailorMobilenum(ctx context.Context, body utils.OtpLogin) (domain.User, error)
 	ShowDetails(ctx context.Context, id uint) (utils.ResponseUsers, error)
