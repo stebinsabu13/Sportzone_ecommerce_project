@@ -115,32 +115,33 @@ func (c *userDatabase) UpdateVerify(number, referalcode string) error {
 		return err
 	}
 	if referalcode != "" {
-		if err := tx.Model(&domain.User{}).Where("mobile_num=?", number).Select("id").Scan(&userid1).Error; err != nil {
-			tx.Rollback()
-			return err
-		}
-		if err := tx.Model(&domain.User{}).Where("referal_code=?", referalcode).Select("id").Scan(&userid2); err.Error != nil {
+		if err := tx.Model(&domain.User{}).Where("referal_code=? AND block=?", referalcode, false).Select("id").Scan(&userid2); err.Error != nil {
 			tx.Rollback()
 			return err.Error
-		}
-		current := time.Now()
-		wallet1 := domain.Wallet{
-			UserID:       userid1,
-			CreditedDate: &current,
-			Amount:       10,
-		}
-		if err := tx.Create(&wallet1).Error; err != nil {
-			tx.Rollback()
-			return err
-		}
-		wallet2 := domain.Wallet{
-			UserID:       userid2,
-			CreditedDate: &current,
-			Amount:       50,
-		}
-		if err := tx.Create(&wallet2).Error; err != nil {
-			tx.Rollback()
-			return err
+		} else if err.RowsAffected != 0 {
+			if err1 := tx.Model(&domain.User{}).Where("mobile_num=?", number).Select("id").Scan(&userid1).Error; err1 != nil {
+				tx.Rollback()
+				return err1
+			}
+			current := time.Now()
+			wallet1 := domain.Wallet{
+				UserID:       userid1,
+				CreditedDate: &current,
+				Amount:       10,
+			}
+			if err1 := tx.Create(&wallet1).Error; err1 != nil {
+				tx.Rollback()
+				return err1
+			}
+			wallet2 := domain.Wallet{
+				UserID:       userid2,
+				CreditedDate: &current,
+				Amount:       50,
+			}
+			if err1 := tx.Create(&wallet2).Error; err1 != nil {
+				tx.Rollback()
+				return err1
+			}
 		}
 	}
 	if err := tx.Commit().Error; err != nil {
