@@ -15,7 +15,7 @@ type Claims struct {
 
 func GenerateJWT(id uint) (string, error) {
 
-	expireTime := time.Now().Add(60 * time.Minute)
+	expireTime := time.Now().Add(5 * time.Minute)
 
 	// create token with expire time and claims id as user id
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &Claims{
@@ -42,12 +42,12 @@ func ValidateToken(tokenString string) (Claims, error) {
 			return []byte(config.GetJWTCofig()), nil
 		},
 	)
-	if err != nil || !token.Valid {
-		return claims, errors.New("not valid token")
-	}
 	//checking the expiry of the token
 	if time.Now().Unix() > claims.ExpiresAt.Unix() {
 		return claims, errors.New("token expired re-login")
+	}
+	if err != nil || !token.Valid {
+		return claims, errors.New("not valid token")
 	}
 	return claims, nil
 }
