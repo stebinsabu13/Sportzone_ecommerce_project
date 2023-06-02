@@ -139,8 +139,7 @@ func (c *OrderDatabase) FindOrderitem(id uint) (domain.OrderDetails, time.Time, 
 	return item, date, nil
 }
 
-func (c *OrderDatabase) CancelOrder(ctx context.Context, item domain.OrderDetails) error {
-	userid := ctx.Value("user-id")
+func (c *OrderDatabase) CancelOrder(userid uint, item domain.OrderDetails) error {
 	prodetail := struct {
 		Price      uint
 		Stock      uint
@@ -188,7 +187,7 @@ func (c *OrderDatabase) CancelOrder(ctx context.Context, item domain.OrderDetail
 		discount := (prodetail.percentage * int(prodetail.Price)) / 100
 		current := time.Now()
 		wallet := domain.Wallet{
-			UserID:       userid.(uint),
+			UserID:       userid,
 			CreditedDate: &current,
 			DebitedDate:  nil,
 			Amount:       int(item.Quantity) * (int(prodetail.Price) - discount),

@@ -81,7 +81,7 @@ func (c *orderUseCase) Razorpayment(userid uint) (utils.RazorpayOrder, error) {
 	return razorpayOrder, nil
 }
 
-func (c *orderUseCase) CancelOrder(ctx context.Context, id, statusid uint) error {
+func (c *orderUseCase) CancelOrder(userid, id, statusid uint) error {
 	orderitem, date, err := c.orderrepo.FindOrderitem(id)
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func (c *orderUseCase) CancelOrder(ctx context.Context, id, statusid uint) error
 	current := time.Now()
 	orderitem.OrderStatusID = statusid
 	orderitem.CancelledDate = &current
-	if err := c.orderrepo.CancelOrder(ctx, orderitem); err != nil {
+	if err := c.orderrepo.CancelOrder(userid, orderitem); err != nil {
 		return err
 	}
 	return nil

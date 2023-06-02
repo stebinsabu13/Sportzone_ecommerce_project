@@ -14,7 +14,7 @@ type OrderRepository interface {
 	Findcartitems(id uint) ([]utils.ResCartItems, error)
 	AddtoOrders([]utils.ResCartItems, domain.Order) error
 	FindOrderitem(uint) (domain.OrderDetails, time.Time, error)
-	CancelOrder(context.Context, domain.OrderDetails) error
+	CancelOrder(uint, domain.OrderDetails) error
 	ReturnOrder(domain.OrderDetails) error
 	FindCoupon(string) (domain.Coupon, error)
 	ValidateCoupon(domain.Coupon, []utils.ResCartItems, *domain.Cart) error

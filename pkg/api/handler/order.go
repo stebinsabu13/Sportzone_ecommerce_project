@@ -104,6 +104,13 @@ func (cr *OrderHandler) ShowOrderDetail(c *gin.Context) {
 }
 
 func (cr *OrderHandler) CancelOrder(c *gin.Context) {
+	userid, ok := c.Get("user-id")
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Unauthorized access",
+		})
+		return
+	}
 	id, err1 := strconv.Atoi(c.Query("orderdetailid"))
 	statusid, err2 := strconv.Atoi(c.Query("statusid"))
 	err := errors.Join(err1, err2)
@@ -113,7 +120,7 @@ func (cr *OrderHandler) CancelOrder(c *gin.Context) {
 		})
 		return
 	}
-	if err := cr.orderUseCase.CancelOrder(c.Request.Context(), uint(id), uint(statusid)); err != nil {
+	if err := cr.orderUseCase.CancelOrder(userid.(uint), uint(id), uint(statusid)); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
