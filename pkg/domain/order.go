@@ -10,6 +10,7 @@ type Order struct {
 	Address    Address   `gorm:"foreignkey:AddressID"`
 	PaymentID  uint      `json:"paymentid" gorm:"not null"`
 	GrandTotal uint      `json:"grandtotal" gorm:"not null"`
+	CouponID   *uint     `json:"couponid"`
 }
 
 type OrderDetails struct {

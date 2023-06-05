@@ -34,7 +34,7 @@ func (c *orderUseCase) OrderDetail(id uint) ([]utils.ResponseOrderDetails, error
 	return c.orderrepo.OrderDetail(id)
 }
 
-func (c *orderUseCase) AddtoOrders(addressid, paymentid, userid uint) error {
+func (c *orderUseCase) AddtoOrders(addressid, paymentid, userid uint, couponid *uint) error {
 	cart, err := c.cartRepo.FindCartById(userid)
 	if err != nil {
 		return err
@@ -49,6 +49,7 @@ func (c *orderUseCase) AddtoOrders(addressid, paymentid, userid uint) error {
 		AddressID:  addressid,
 		PaymentID:  paymentid,
 		GrandTotal: uint(cart.GrandTotal),
+		CouponID:   couponid,
 	}
 	if err := c.orderrepo.AddtoOrders(cartitems, order); err != nil {
 		return err
@@ -56,7 +57,7 @@ func (c *orderUseCase) AddtoOrders(addressid, paymentid, userid uint) error {
 	return nil
 }
 
-func (c *orderUseCase) Razorpayment(userid uint) (utils.RazorpayOrder, error) {
+func (c *orderUseCase) Razorpayment(userid uint, couponid *uint) (utils.RazorpayOrder, error) {
 	var razorpayOrder utils.RazorpayOrder
 	cart, err := c.cartRepo.FindCartById(userid)
 	if err != nil {
@@ -166,23 +167,35 @@ func (c *orderUseCase) UpdateStatus(id, statusid uint) error {
 	return nil
 }
 
-func (c *orderUseCase) ValidateCoupon(userid uint, code string) error {
+func (c *orderUseCase) ValidateCoupon(userid uint, code string) (*uint, error) {
 	cart, err := c.cartRepo.FindCartById(userid)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if code != "" {
 		coupon, err2 := c.orderrepo.FindCoupon(code)
 		if err2 != nil {
-			return err2
+			return nil, err2
 		}
 		cartitems, err1 := c.orderrepo.Findcartitems(cart.ID)
 		if err1 != nil {
-			return err1
+			return nil, err1
 		}
 		if err = c.orderrepo.ValidateCoupon(coupon, cartitems, &cart); err != nil {
-			return err
+			return nil, err
 		}
+		return &coupon.ID, nil
 	}
-	return nil
+	return nil, nil
+}
+
+func (c *orderUseCase) FindCoupon(code string) (*uint, error) {
+	if code != "" {
+		coupon, err := c.orderrepo.FindCoupon(code)
+		if err != nil {
+			return nil, err
+		}
+		return &coupon.ID, err
+	}
+	return nil, nil
 }

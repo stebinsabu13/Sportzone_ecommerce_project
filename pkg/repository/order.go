@@ -140,16 +140,19 @@ func (c *OrderDatabase) FindOrderitem(id uint) (domain.OrderDetails, time.Time, 
 }
 
 func (c *OrderDatabase) CancelOrder(userid uint, item domain.OrderDetails) error {
+	var coupon domain.Coupon
 	prodetail := struct {
 		Price      uint
 		Stock      uint
 		percentage int
 		Paymode    int
+		Productid  int
 	}{
 		Price:      0,
 		Stock:      0,
 		percentage: 0,
 		Paymode:    0,
+		Productid:  0,
 	}
 	var grandtotal int
 	tx := c.DB.Begin()
@@ -161,7 +164,7 @@ func (c *OrderDatabase) CancelOrder(userid uint, item domain.OrderDetails) error
 		tx.Rollback()
 		return err
 	}
-	if err := tx.Model(&domain.ProductDetails{}).Where("id=?", item.ProductDetailID).Select("price,stock").Scan(&prodetail).Error; err != nil {
+	if err := tx.Model(&domain.ProductDetails{}).Where("id=?", item.ProductDetailID).Select("price,stock,product_id").Scan(&prodetail).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -174,7 +177,25 @@ func (c *OrderDatabase) CancelOrder(userid uint, item domain.OrderDetails) error
 		return err
 	}
 	discount := (prodetail.percentage * int(prodetail.Price)) / 100
-	total := grandtotal - (int(item.Quantity) * (int(prodetail.Price) - discount))
+	prodtotal := item.Quantity * (prodetail.Price - uint(discount))
+	total := grandtotal - int(prodtotal)
+	result := tx.Model(&domain.Coupon{}).Joins("join orders on coupons.id=orders.coupon_id").Where("orders.id=?", item.OrderID).Find(&coupon)
+	if result.Error != nil {
+		tx.Rollback()
+		return result.Error
+	}
+	if result.RowsAffected != 0 {
+		if total < int(*coupon.MinimumOrderAmount) || *coupon.ProductID == prodetail.Productid {
+			if coupon.CouponType == 1 {
+				coupondiscount := (coupon.Discount * prodetail.Price) / 100
+				total += int(coupondiscount)
+				prodtotal -= coupondiscount
+			} else if coupon.CouponType == 2 {
+				total += int(coupon.Discount)
+				prodtotal -= coupon.Discount
+			}
+		}
+	}
 	if err := tx.Model(&domain.Order{}).Where("id=?", item.OrderID).UpdateColumn("grand_total", total).Error; err != nil {
 		tx.Rollback()
 		return err
@@ -184,13 +205,12 @@ func (c *OrderDatabase) CancelOrder(userid uint, item domain.OrderDetails) error
 		return err
 	}
 	if prodetail.Paymode != 1 {
-		discount := (prodetail.percentage * int(prodetail.Price)) / 100
 		current := time.Now()
 		wallet := domain.Wallet{
 			UserID:       userid,
 			CreditedDate: &current,
 			DebitedDate:  nil,
-			Amount:       int(item.Quantity) * (int(prodetail.Price) - discount),
+			Amount:       int(prodtotal),
 		}
 		if err := tx.Create(&wallet).Error; err != nil {
 			tx.Rollback()
@@ -227,15 +247,19 @@ func (c *OrderDatabase) ListAllOrders() ([]utils.ResAllOrders, error) {
 
 func (c *OrderDatabase) UpdateStatus(item domain.OrderDetails) error {
 	var userid uint
+	var coupon domain.Coupon
 	prodetail := struct {
 		Price      uint
 		Stock      uint
 		percentage int
+		Productid  int
 	}{
 		Price:      0,
 		Stock:      0,
 		percentage: 0,
+		Productid:  0,
 	}
+	var grandtotal int
 	tx := c.DB.Begin()
 	if err := tx.Model(&domain.OrderDetails{}).Where("id=?", item.ID).UpdateColumns(&item).Error; err != nil {
 		tx.Rollback()
@@ -246,7 +270,7 @@ func (c *OrderDatabase) UpdateStatus(item domain.OrderDetails) error {
 			tx.Rollback()
 			return err
 		}
-		if err := tx.Model(&domain.ProductDetails{}).Where("id=?", item.ProductDetailID).Select("price,stock").Scan(&prodetail).Error; err != nil {
+		if err := tx.Model(&domain.ProductDetails{}).Where("id=?", item.ProductDetailID).Select("price,stock,product_id").Scan(&prodetail).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -258,13 +282,40 @@ func (c *OrderDatabase) UpdateStatus(item domain.OrderDetails) error {
 			tx.Rollback()
 			return err
 		}
+		if err := tx.Model(&domain.Order{}).Where("id=?", item.OrderID).Select("grand_total").Scan(&grandtotal).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 		discount := (prodetail.percentage * int(prodetail.Price)) / 100
+		prodtotal := item.Quantity * (prodetail.Price - uint(discount))
+		total := grandtotal - int(prodtotal)
+		result := tx.Model(&domain.Coupon{}).Joins("join orders on coupons.id=orders.coupon_id").Where("orders.id=?", item.OrderID).Find(&coupon)
+		if result.Error != nil {
+			tx.Rollback()
+			return result.Error
+		}
+		if result.RowsAffected != 0 {
+			if total < int(*coupon.MinimumOrderAmount) || *coupon.ProductID == prodetail.Productid {
+				if coupon.CouponType == 1 {
+					coupondiscount := (coupon.Discount * prodetail.Price) / 100
+					total += int(coupondiscount)
+					prodtotal -= coupondiscount
+				} else if coupon.CouponType == 2 {
+					total += int(coupon.Discount)
+					prodtotal -= coupon.Discount
+				}
+			}
+		}
+		if err := tx.Model(&domain.Order{}).Where("id=?", item.OrderID).UpdateColumn("grand_total", total).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 		current := time.Now()
 		wallet := domain.Wallet{
 			UserID:       userid,
 			CreditedDate: &current,
 			DebitedDate:  nil,
-			Amount:       int(item.Quantity) * (int(prodetail.Price) - discount),
+			Amount:       int(prodtotal),
 		}
 		if err := tx.Create(&wallet).Error; err != nil {
 			tx.Rollback()
@@ -336,9 +387,9 @@ func (c *OrderDatabase) ValidateCoupon(coupon domain.Coupon, cartitems []utils.R
 				found = true
 				if coupon.CouponType == 1 {
 					discount := (prodetail.Price * coupon.Discount) / 100
-					cart.GrandTotal -= int(discount)
+					cart.GrandTotal = cart.GrandTotal - int(discount)
 				} else if coupon.CouponType == 2 {
-					cart.GrandTotal -= int(coupon.Discount)
+					cart.GrandTotal = cart.GrandTotal - int(coupon.Discount)
 				}
 				useCount++
 			}
@@ -350,9 +401,9 @@ func (c *OrderDatabase) ValidateCoupon(coupon domain.Coupon, cartitems []utils.R
 		for useCount < coupon.UsageLimit {
 			if coupon.CouponType == 1 {
 				discount := (cart.GrandTotal * int(coupon.Discount)) / 100
-				cart.GrandTotal -= int(discount)
+				cart.GrandTotal = cart.GrandTotal - int(discount)
 			} else if coupon.CouponType == 2 {
-				cart.GrandTotal -= int(coupon.Discount)
+				cart.GrandTotal = cart.GrandTotal - int(coupon.Discount)
 			}
 			useCount++
 		}

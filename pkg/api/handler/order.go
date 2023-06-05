@@ -31,14 +31,15 @@ func (cr *OrderHandler) AddtoOrders(c *gin.Context) {
 		})
 		return
 	}
-	if err := cr.orderUseCase.ValidateCoupon(id.(uint), code); err != nil {
+	couponid, err := cr.orderUseCase.ValidateCoupon(id.(uint), code)
+	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 	if paymentid == 2 {
-		body, err := cr.orderUseCase.Razorpayment(id.(uint))
+		body, err := cr.orderUseCase.Razorpayment(id.(uint), couponid)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
@@ -51,7 +52,7 @@ func (cr *OrderHandler) AddtoOrders(c *gin.Context) {
 			"Total_price": body.AmountToPay,
 		})
 	} else {
-		if err := cr.orderUseCase.AddtoOrders(uint(addressid), uint(paymentid), id.(uint)); err != nil {
+		if err := cr.orderUseCase.AddtoOrders(uint(addressid), uint(paymentid), id.(uint), couponid); err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
 			})
@@ -172,6 +173,7 @@ func (cr *OrderHandler) RazorpaymentSuccess(c *gin.Context) {
 	userID, err1 := strconv.Atoi(c.Query("user_id"))
 	addressid, err2 := strconv.Atoi(c.Query("addressid"))
 	paymentid, err3 := strconv.Atoi(c.Query("paymentid"))
+	code := c.Query("code")
 	payment_refID := c.Query("payment_ref")
 	signatureID := c.Query("signature")
 	response := gin.H{
@@ -187,7 +189,14 @@ func (cr *OrderHandler) RazorpaymentSuccess(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
-	if err := cr.orderUseCase.AddtoOrders(uint(addressid), uint(paymentid), uint(userID)); err != nil {
+	couponid, er := cr.orderUseCase.FindCoupon(code)
+	if er != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": er.Error(),
+		})
+		return
+	}
+	if err := cr.orderUseCase.AddtoOrders(uint(addressid), uint(paymentid), uint(userID), couponid); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, response)
 		return
 	}
