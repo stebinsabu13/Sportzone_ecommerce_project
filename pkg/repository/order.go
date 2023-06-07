@@ -62,6 +62,7 @@ func (c *OrderDatabase) AddtoOrders(items []utils.ResCartItems, order domain.Ord
 			return err
 		}
 		if balance < int(order.GrandTotal) {
+			tx.Rollback()
 			return errors.New("insufficient balance in wallet,choose different payment option")
 		}
 		current := time.Now()
