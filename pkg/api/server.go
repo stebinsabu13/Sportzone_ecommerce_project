@@ -38,7 +38,7 @@ func NewServerHTTP(userHandler *handler.UserHandler, adminHandler *handler.Admin
 
 func (s *ServerHTTP) Start() {
 	s.engine.LoadHTMLGlob("static/*.html")
-	if err := s.engine.Run(":8000"); err != nil {
+	if err := s.engine.Run(":3000"); err != nil {
 		return
 	}
 }
