@@ -9,7 +9,8 @@ import (
 
 type AdminUseCase interface {
 	FindbyEmail(ctx context.Context, email string) (domain.Admin, error)
-	// SignUpAdmin(ctx context.Context, admin domain.Admin) error
+	SignUpAdmin(ctx context.Context, admin utils.BodySignUpuser) (string, error)
+	UpdateVerify(string, string) error
 	ListAllUsers(context.Context, utils.Pagination) ([]utils.ResponseUsers, error)
 	AccessManage(ctx context.Context, id string, access bool) error
 	ListAllCategories(ctx context.Context) ([]utils.ResponseCategory, error)

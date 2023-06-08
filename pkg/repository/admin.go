@@ -33,11 +33,19 @@ func (c *adminDatabase) FindbyEmail(ctx context.Context, email string) (domain.A
 	return admin, nil
 }
 
-// func (c *adminDatabase) SignUpAdmin(ctx context.Context, admin domain.Admin) error {
-// 	err := c.DB.Create(&admin).Error
-// 	return err
-// }
+func (c *adminDatabase) SignUpAdmin(ctx context.Context, admin domain.Admin) (string, error) {
+	if err := c.DB.Create(&admin).Error; err != nil {
+		return admin.MobileNum, err
+	}
+	return admin.MobileNum, nil
+}
 
+func (c *adminDatabase) UpdateVerify(number, referalcode string) error {
+	if err := c.DB.Model(&domain.Admin{}).Where("mobile_num=?", number).UpdateColumn("verified", true).Error; err != nil {
+		return err
+	}
+	return nil
+}
 func (c *adminDatabase) ListAllUsers(ctx context.Context, pagination utils.Pagination) ([]utils.ResponseUsers, error) {
 	var users []utils.ResponseUsers
 	limit := pagination.Limit

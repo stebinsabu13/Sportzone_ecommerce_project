@@ -2,9 +2,11 @@ package usecase
 
 import (
 	"context"
+	"errors"
 
 	"github.com/stebinsabu13/ecommerce-api/pkg/domain"
 	interfaces "github.com/stebinsabu13/ecommerce-api/pkg/repository/interface"
+	"github.com/stebinsabu13/ecommerce-api/pkg/support"
 	services "github.com/stebinsabu13/ecommerce-api/pkg/usecase/interface"
 	"github.com/stebinsabu13/ecommerce-api/pkg/utils"
 )
@@ -21,10 +23,28 @@ func (c *adminUseCase) FindbyEmail(ctx context.Context, email string) (domain.Ad
 	return admin, err
 }
 
-// func (c *adminUseCase) SignUpAdmin(ctx context.Context, admin domain.Admin) error {
-// 	err := c.adminrepo.SignUpAdmin(ctx, admin)
-// 	return err
-// }
+func (c *adminUseCase) SignUpAdmin(ctx context.Context, admin utils.BodySignUpuser) (string, error) {
+	if _, err := c.adminrepo.FindbyEmail(ctx, admin.Email); err == nil {
+		return "", errors.New("user already exsists")
+	}
+	hash, err := support.HashPassword(admin.Password)
+	if err != nil {
+		return "", errors.New("error while hashing password")
+	}
+	ADMIN := domain.Admin{
+		Name:      admin.FirstName,
+		Email:     admin.Email,
+		MobileNum: admin.MobileNum,
+		Password:  hash,
+	}
+	mobile_num, err := c.adminrepo.SignUpAdmin(ctx, ADMIN)
+	return mobile_num, err
+}
+
+func (c *adminUseCase) UpdateVerify(number, refercode string) error {
+	err := c.adminrepo.UpdateVerify(number, refercode)
+	return err
+}
 
 func (c *adminUseCase) ListAllUsers(ctx context.Context, pagination utils.Pagination) ([]utils.ResponseUsers, error) {
 	users, err := c.adminrepo.ListAllUsers(ctx, pagination)

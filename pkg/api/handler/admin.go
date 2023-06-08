@@ -18,11 +18,13 @@ import (
 
 type AdminHandler struct {
 	AdminUseCase services.AdminUseCase
+	OtpUseCase   services.OtpUseCase
 }
 
-func NewAdminHandler(usecase services.AdminUseCase) *AdminHandler {
+func NewAdminHandler(usecase services.AdminUseCase, otpusecase services.OtpUseCase) *AdminHandler {
 	return &AdminHandler{
 		AdminUseCase: usecase,
+		OtpUseCase:   otpusecase,
 	}
 }
 
@@ -86,47 +88,61 @@ func (cr *AdminHandler) LogoutHandler(c *gin.Context) {
 	})
 }
 
-// func (cr *AdminHandler) SignUp(c *gin.Context) {
-// 	var admin domain.Admin
-// 	if err := c.BindJSON(&admin); err != nil {
-// 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-// 			"error": err.Error(),
-// 		})
-// 		return
-// 	}
+func (cr *AdminHandler) SignUp(c *gin.Context) {
+	var signUp_user utils.BodySignUpuser
+	if err := c.BindJSON(&signUp_user); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	mobile_num, err := cr.AdminUseCase.SignUpAdmin(c.Request.Context(), signUp_user)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	respSid, err1 := cr.OtpUseCase.TwilioSendOTP(c.Request.Context(), mobile_num)
+	if err1 != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err1.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"Success":     "Enter the otp and the responseid",
+		"responseid":  respSid,
+		"referalcode": signUp_user.ReferalCode,
+	})
+}
 
-// 	if ok := support.Email_validater(admin.Email); !ok {
-// 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-// 			"error": "Email format incorrect",
-// 		})
-// 		return
-// 	}
-
-// 	if ok := support.MobileNum_validater(admin.MobileNum); !ok {
-// 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-// 			"error": "Not a valid mobile number",
-// 		})
-// 		return
-// 	}
-// 	if _, err := cr.AdminUseCase.FindbyEmail(c.Request.Context(), admin.Email); err == nil {
-// 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-// 			"error": "User already Exsists",
-// 		})
-// 		return
-// 	}
-
-// 	admin.Password, _ = support.HashPassword(admin.Password)
-// 	err := cr.AdminUseCase.SignUpAdmin(c.Request.Context(), admin)
-// 	if err != nil {
-// 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-// 			"error": err.Error(),
-// 		})
-// 		return
-// 	}
-// 	c.JSON(http.StatusOK, gin.H{
-// 		"User registration": "Success",
-// 	})
-// }
+func (cr *AdminHandler) SignupOtpverify(c *gin.Context) {
+	var OTP utils.Otpverify
+	if err := c.BindJSON(&OTP); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": "Error binding json",
+		})
+		return
+	}
+	session, err := cr.OtpUseCase.TwilioVerifyOTP(c.Request.Context(), OTP)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	err1 := cr.AdminUseCase.UpdateVerify(session.MobileNum, OTP.ReferalCode)
+	if err1 != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": err1.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"User registration": "Success",
+	})
+}
 
 func (cr *AdminHandler) ListAllUsers(c *gin.Context) {
 	page, err := strconv.Atoi(c.Query("page"))

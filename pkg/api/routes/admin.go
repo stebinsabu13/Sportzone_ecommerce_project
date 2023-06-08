@@ -12,6 +12,11 @@ func AdminRoutes(api *gin.RouterGroup, adminHandler *handler.AdminHandler, produ
 		login.POST("/login", adminHandler.LoginHandler)
 		// login.POST("/signup", adminHandler.SignUp)
 	}
+	signup := api.Group("/admin")
+	{
+		signup.POST("/signup", adminHandler.SignUp)
+		signup.POST("/signup/otp/verify", adminHandler.SignupOtpverify)
+	}
 	home := api.Group("/admin")
 	{
 		home.Use(middleware.AuthorizationMiddleware("admin"))

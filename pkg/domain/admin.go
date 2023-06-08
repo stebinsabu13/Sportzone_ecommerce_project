@@ -8,4 +8,5 @@ type Admin struct {
 	Email     string `json:"email" gorm:"uniqueIndex;not null"`
 	MobileNum string `json:"mobilenum" gorm:"uniqueIndex;not null"`
 	Password  string `json:"password" gorm:"not null"`
+	Verified  bool   `json:"verified" gorm:"default:false"`
 }

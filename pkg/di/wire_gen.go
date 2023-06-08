@@ -32,7 +32,7 @@ func InitializeAPI(cfg config.Config) (*api.ServerHTTP, error) {
 	userHandler := handler.NewUserHandler(userUseCase, otpUseCase, orderUseCase)
 	adminRepository := repository.NewAdminRepository(gormDB)
 	adminUseCase := usecase.NewAdminUseCase(adminRepository)
-	adminHandler := handler.NewAdminHandler(adminUseCase)
+	adminHandler := handler.NewAdminHandler(adminUseCase, otpUseCase)
 	productRepository := repository.NewProductrepository(gormDB)
 	productUseCase := usecase.NewProductUseCase(productRepository)
 	productHandler := handler.NewProductHandler(productUseCase)
