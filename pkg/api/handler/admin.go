@@ -82,7 +82,7 @@ func (cr *AdminHandler) LoginHandler(c *gin.Context) {
 // }
 
 func (cr *AdminHandler) LogoutHandler(c *gin.Context) {
-	c.SetCookie("admin-token", "", -1, "/", "localhost", false, true)
+	c.SetCookie("admin-token", "", -1, "/", "sportzone.cloud", true, true)
 	c.JSON(http.StatusOK, gin.H{
 		"logout": "Success",
 	})
