@@ -56,7 +56,7 @@ func (cr *AdminHandler) LoginHandler(c *gin.Context) {
 		})
 		return
 	}
-	c.SetCookie("admin-token", tokenString, int(time.Now().Add(5*time.Minute).Unix()), "/", "localhost", false, true)
+	c.SetCookie("admin-token", tokenString, int(time.Now().Add(5*time.Minute).Unix()), "/", "sportzone.cloud", true, true)
 	c.Set("admin-id", admin.ID)
 	c.JSON(http.StatusOK, gin.H{
 		"Success": "Admin Login",
