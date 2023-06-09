@@ -565,16 +565,16 @@ func (cr *UserHandler) ListAllCategories(c *gin.Context) {
 	})
 }
 
-// @Summary		API FOR VIEWING THE WALLER
-// @Description	VIEWING THE WALLET FROM USERS END
-// @Tags			USER
-// @Accept			json
-// @Produce		json
-// @Success		200	{object}	utils.Response
-// @Failure		401	{object}	utils.Response
-// @Failure		400	{object}	utils.Response
-// @Failure		500	{object}	utils.Response
-// @Router			/user/wallet [get]
+//	@Summary		API FOR VIEWING THE WALLER
+//	@Description	VIEWING THE WALLET FROM USERS END
+//	@Tags			USER
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	utils.Response
+//	@Failure		401	{object}	utils.Response
+//	@Failure		400	{object}	utils.Response
+//	@Failure		500	{object}	utils.Response
+//	@Router			/user/wallet [get]
 func (cr *UserHandler) ViewWallet(c *gin.Context) {
 	userid, ok := c.Get("user-id")
 	if !ok {

@@ -486,20 +486,20 @@ func (cr *AdminHandler) Dashboard(c *gin.Context) {
 	})
 }
 
-// @Summary		API FOR ADDING THE COUPON
-// @ID				ADMIN-ADD-COUPON
-// @Description	ADDING COUPONS IN THE ADMINS END
-// @Tags			ADMIN
-// @Accept			json
-// @Produce		json
+//	@Summary		API FOR ADDING THE COUPON
+//	@ID				ADMIN-ADD-COUPON
+//	@Description	ADDING COUPONS IN THE ADMINS END
+//	@Tags			ADMIN
+//	@Accept			json
+//	@Produce		json
 //
-// @Param			coupon_details	body		utils.BodyAddCoupon	false	"Enter the details of the coupon"
+//	@Param			coupon_details	body		utils.BodyAddCoupon	false	"Enter the details of the coupon"
 //
-// @Success		200				{object}	utils.ResWidgets
-// @Failure		401				{object}	utils.Response
-// @Failure		400				{object}	utils.Response
-// @Failure		500				{object}	utils.Response
-// @Router			/admin/coupon/add [post]
+//	@Success		200				{object}	utils.ResWidgets
+//	@Failure		401				{object}	utils.Response
+//	@Failure		400				{object}	utils.Response
+//	@Failure		500				{object}	utils.Response
+//	@Router			/admin/coupon/add [post]
 func (cr *AdminHandler) AddCoupon(c *gin.Context) {
 	var couponBody utils.BodyAddCoupon
 	if err := c.BindJSON(&couponBody); err != nil {
@@ -535,20 +535,20 @@ func (cr *AdminHandler) AddCoupon(c *gin.Context) {
 	})
 }
 
-// @Summary		API FOR VIEWING ALL COUPON
-// @ID				ADMIN-VIEW-COUPON
-// @Description	VIEWING COUPONS IN THE ADMINS END
-// @Tags			ADMIN
-// @Accept			json
-// @Produce		json
+//	@Summary		API FOR VIEWING ALL COUPON
+//	@ID				ADMIN-VIEW-COUPON
+//	@Description	VIEWING COUPONS IN THE ADMINS END
+//	@Tags			ADMIN
+//	@Accept			json
+//	@Produce		json
 //
-// @Param			page	query		string	false	"Enter the page number"
-// @Param			limit	query		string	false	"Enter the number of coupons to retrieve"
-// @Success		200		{object}	utils.ResWidgets
-// @Failure		401		{object}	utils.Response
-// @Failure		400		{object}	utils.Response
-// @Failure		500		{object}	utils.Response
-// @Router			/admin/coupon [get]
+//	@Param			page	query		string	false	"Enter the page number"
+//	@Param			limit	query		string	false	"Enter the number of coupons to retrieve"
+//	@Success		200		{object}	utils.ResWidgets
+//	@Failure		401		{object}	utils.Response
+//	@Failure		400		{object}	utils.Response
+//	@Failure		500		{object}	utils.Response
+//	@Router			/admin/coupon [get]
 func (cr *AdminHandler) GetAllCoupons(c *gin.Context) {
 	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, err1 := strconv.Atoi(c.DefaultQuery("limit", "5"))
@@ -576,20 +576,20 @@ func (cr *AdminHandler) GetAllCoupons(c *gin.Context) {
 	})
 }
 
-// @Summary		API FOR UPDATING COUPON
-// @ID				ADMIN-UPDATING-COUPON
-// @Description	UPDATING COUPONS IN THE ADMINS END
-// @Tags			ADMIN
-// @Accept			json
-// @Produce		json
+//	@Summary		API FOR UPDATING COUPON
+//	@ID				ADMIN-UPDATING-COUPON
+//	@Description	UPDATING COUPONS IN THE ADMINS END
+//	@Tags			ADMIN
+//	@Accept			json
+//	@Produce		json
 //
-// @Param			couponid		query		string				true	"Enter the coupon id to update"
-// @Param			coupon_details	body		utils.BodyAddCoupon	false	"Enter the body of the coupon"
-// @Success		200				{object}	utils.ResWidgets
-// @Failure		401				{object}	utils.Response
-// @Failure		400				{object}	utils.Response
-// @Failure		500				{object}	utils.Response
-// @Router			/admin/coupon/update [patch]
+//	@Param			couponid		query		string				true	"Enter the coupon id to update"
+//	@Param			coupon_details	body		utils.BodyAddCoupon	false	"Enter the body of the coupon"
+//	@Success		200				{object}	utils.ResWidgets
+//	@Failure		401				{object}	utils.Response
+//	@Failure		400				{object}	utils.Response
+//	@Failure		500				{object}	utils.Response
+//	@Router			/admin/coupon/update [patch]
 func (cr *AdminHandler) UpdateCoupon(c *gin.Context) {
 	couponid := c.Query("couponid")
 	var couponBody utils.BodyAddCoupon
@@ -626,19 +626,19 @@ func (cr *AdminHandler) UpdateCoupon(c *gin.Context) {
 	})
 }
 
-// @Summary		API FOR VIEWING COUPON BY ID
-// @ID				ADMIN-COUPON-BY-ID
-// @Description	VIEWING COUPON BY ID IN THE ADMINS END
-// @Tags			ADMIN
-// @Accept			json
-// @Produce		json
+//	@Summary		API FOR VIEWING COUPON BY ID
+//	@ID				ADMIN-COUPON-BY-ID
+//	@Description	VIEWING COUPON BY ID IN THE ADMINS END
+//	@Tags			ADMIN
+//	@Accept			json
+//	@Produce		json
 //
-// @Param			couponid	path		string	true	"Enter the coupon id to view"
-// @Success		200			{object}	utils.ResWidgets
-// @Failure		401			{object}	utils.Response
-// @Failure		400			{object}	utils.Response
-// @Failure		500			{object}	utils.Response
-// @Router			/admin/coupon/{couponid} [get]
+//	@Param			couponid	path		string	true	"Enter the coupon id to view"
+//	@Success		200			{object}	utils.ResWidgets
+//	@Failure		401			{object}	utils.Response
+//	@Failure		400			{object}	utils.Response
+//	@Failure		500			{object}	utils.Response
+//	@Router			/admin/coupon/{couponid} [get]
 func (cr *AdminHandler) GetCouponByID(c *gin.Context) {
 	couponid := c.Param("couponid")
 	coupon, err := cr.AdminUseCase.GetCouponByID(couponid)
@@ -653,19 +653,19 @@ func (cr *AdminHandler) GetCouponByID(c *gin.Context) {
 	})
 }
 
-// @Summary		API FOR DELETING COUPON
-// @ID				ADMIN-COUPON-DELETION
-// @Description	DELETING COUPON IN THE ADMINS END
-// @Tags			ADMIN
-// @Accept			json
-// @Produce		json
+//	@Summary		API FOR DELETING COUPON
+//	@ID				ADMIN-COUPON-DELETION
+//	@Description	DELETING COUPON IN THE ADMINS END
+//	@Tags			ADMIN
+//	@Accept			json
+//	@Produce		json
 //
-// @Param			couponid	path		string	true	"Enter the coupon id to delete"
-// @Success		200			{object}	utils.ResWidgets
-// @Failure		401			{object}	utils.Response
-// @Failure		400			{object}	utils.Response
-// @Failure		500			{object}	utils.Response
-// @Router			/admin/coupon/delete/{couponid} [delete]
+//	@Param			couponid	path		string	true	"Enter the coupon id to delete"
+//	@Success		200			{object}	utils.ResWidgets
+//	@Failure		401			{object}	utils.Response
+//	@Failure		400			{object}	utils.Response
+//	@Failure		500			{object}	utils.Response
+//	@Router			/admin/coupon/delete/{couponid} [delete]
 func (cr *AdminHandler) DeleteCoupon(c *gin.Context) {
 	couponid := c.Param("couponid")
 	if err := cr.AdminUseCase.DeleteCoupon(couponid); err != nil {
