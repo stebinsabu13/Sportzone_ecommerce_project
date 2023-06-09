@@ -70,7 +70,7 @@ func (c *CartDatabase) UpdateCartitem(exsistitem domain.CartItem) error {
 		tx.Rollback()
 		return err
 	}
-	if err := tx.Model(&domain.CartItem{}).Where("cart_id=?", exsistitem.CartID).Select("SUM(total)").Scan(&grandtotal).Error; err != nil {
+	if err := tx.Model(&domain.CartItem{}).Where("cart_id=?", exsistitem.CartID).Select("COALESCE(SUM(total), 0)").Scan(&grandtotal).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -108,15 +108,22 @@ func (c *CartDatabase) AddNewitem(item domain.CartItem) error {
 }
 
 func (c *CartDatabase) DeleteCartitem(item domain.CartItem) error {
+	var result *int
 	var grandtotal int
 	tx := c.DB.Begin()
 	if err := tx.Model(&domain.CartItem{}).Where("id=?", item.ID).Delete(&item).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
-	if err := tx.Model(&domain.CartItem{}).Where("cart_id=?", item.CartID).Select("SUM(total)").Scan(&grandtotal).Error; err != nil {
+	if err := tx.Model(&domain.CartItem{}).Where("cart_id=?", item.CartID).Select("SUM(total)").Scan(&result).Error; err != nil {
 		tx.Rollback()
 		return err
+	} else {
+		if result != nil {
+			grandtotal = *result
+		} else {
+			grandtotal = 0
+		}
 	}
 	if err := tx.Model(&domain.Cart{}).Where("id=?", item.CartID).UpdateColumn("grand_total", grandtotal).Error; err != nil {
 		tx.Rollback()

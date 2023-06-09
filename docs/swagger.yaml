@@ -1,0 +1,2128 @@
+definitions:
+  utils.AddAddress:
+    properties:
+      city:
+        type: string
+      country:
+        type: string
+      housename:
+        type: string
+      pincode:
+        type: string
+      state:
+        type: string
+      street:
+        type: string
+    required:
+    - city
+    - country
+    - housename
+    - pincode
+    - state
+    - street
+    type: object
+  utils.AddCategory:
+    properties:
+      categoryname:
+        type: string
+    required:
+    - categoryname
+    type: object
+  utils.AddProduct:
+    properties:
+      brandid:
+        type: integer
+      categoryid:
+        type: integer
+      image:
+        type: string
+      modelname:
+        type: string
+    required:
+    - categoryid
+    - image
+    - modelname
+    type: object
+  utils.AddProductDetail:
+    properties:
+      availablecolourid:
+        type: integer
+      availablesizeid:
+        type: integer
+      discountid:
+        type: integer
+      price:
+        type: integer
+      productid:
+        type: integer
+      stock:
+        type: integer
+    required:
+    - availablecolourid
+    - availablesizeid
+    - price
+    - productid
+    - stock
+    type: object
+  utils.BodyAddCoupon:
+    properties:
+      code:
+        type: string
+      discount:
+        type: integer
+      expdate:
+        type: string
+      minorderamount:
+        type: integer
+      productid:
+        type: integer
+      type:
+        type: integer
+      usagelimit:
+        type: integer
+    required:
+    - code
+    - discount
+    - expdate
+    - type
+    - usagelimit
+    type: object
+  utils.BodyLogin:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  utils.BodySignUpuser:
+    properties:
+      confirmpassword:
+        type: string
+      email:
+        type: string
+      firstname:
+        type: string
+      lastname:
+        type: string
+      mobilenum:
+        maxLength: 10
+        minLength: 10
+        type: string
+      password:
+        type: string
+      referalcode:
+        type: string
+    required:
+    - confirmpassword
+    - email
+    - firstname
+    - lastname
+    - mobilenum
+    - password
+    type: object
+  utils.EditProfileReq:
+    properties:
+      email:
+        type: string
+      firstname:
+        type: string
+      lastname:
+        type: string
+    required:
+    - email
+    - firstname
+    - lastname
+    type: object
+  utils.OtpLogin:
+    properties:
+      email:
+        type: string
+      mobilenum:
+        type: string
+    type: object
+  utils.Otpverify:
+    properties:
+      newpassword:
+        type: string
+      otp:
+        type: string
+      otpid:
+        type: string
+      referalcode:
+        type: string
+    required:
+    - otp
+    type: object
+  utils.ResWidgets:
+    properties:
+      numberofblockedusers:
+        type: integer
+      numberofpendingorders:
+        type: integer
+      numberofproducts:
+        type: integer
+      numberofreturnsubmission:
+        type: integer
+    type: object
+  utils.Response:
+    properties:
+      data: {}
+      errors: {}
+      message:
+        type: string
+      status_code:
+        type: integer
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: SPORTZONE_E-COMMERCE REST API built using Go, PSQL, REST API following
+    Clean Architecture.
+  title: SPORTZONE_E-COMMERCE REST API
+  version: "2.0"
+paths:
+  /:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses: {}
+  /admin/category:
+    get:
+      consumes:
+      - application/json
+      description: LISTING ALL CATEGORIES FROM ADMINS AND USERS END
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR LISTING ALL CATEGORIES
+      tags:
+      - ADMIN USER
+  /admin/category/add:
+    post:
+      consumes:
+      - application/json
+      description: ADDING CATEGORY FROM ADMINS END
+      operationId: ADMIN-ADD-CATEGORY
+      parameters:
+      - description: Enter the category name
+        in: body
+        name: category_details
+        required: true
+        schema:
+          $ref: '#/definitions/utils.AddCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR ADDING CATEGORY
+      tags:
+      - ADMIN
+  /admin/category/delete/{categoryid}:
+    delete:
+      consumes:
+      - application/json
+      description: DELETING CATEGORY AND ALSO CHECKING WHETHER IT HAS A EXISTING PRODUCT
+      operationId: ADMIN-DELETE-CATEGORY
+      parameters:
+      - description: Enter the category id that you would like to delete
+        in: path
+        name: categoryid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR DELETING A CATEGORY
+      tags:
+      - ADMIN
+  /admin/coupon:
+    get:
+      consumes:
+      - application/json
+      description: VIEWING COUPONS IN THE ADMINS END
+      operationId: ADMIN-VIEW-COUPON
+      parameters:
+      - description: Enter the page number
+        in: query
+        name: page
+        type: string
+      - description: Enter the number of coupons to retrieve
+        in: query
+        name: limit
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResWidgets'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR VIEWING ALL COUPON
+      tags:
+      - ADMIN
+  /admin/coupon/{couponid}:
+    get:
+      consumes:
+      - application/json
+      description: VIEWING COUPON BY ID IN THE ADMINS END
+      operationId: ADMIN-COUPON-BY-ID
+      parameters:
+      - description: Enter the coupon id to view
+        in: path
+        name: couponid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResWidgets'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR VIEWING COUPON BY ID
+      tags:
+      - ADMIN
+  /admin/coupon/add:
+    post:
+      consumes:
+      - application/json
+      description: ADDING COUPONS IN THE ADMINS END
+      operationId: ADMIN-ADD-COUPON
+      parameters:
+      - description: Enter the details of the coupon
+        in: body
+        name: coupon_details
+        schema:
+          $ref: '#/definitions/utils.BodyAddCoupon'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResWidgets'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR ADDING THE COUPON
+      tags:
+      - ADMIN
+  /admin/coupon/delete/{couponid}:
+    delete:
+      consumes:
+      - application/json
+      description: DELETING COUPON IN THE ADMINS END
+      operationId: ADMIN-COUPON-DELETION
+      parameters:
+      - description: Enter the coupon id to delete
+        in: path
+        name: couponid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResWidgets'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR DELETING COUPON
+      tags:
+      - ADMIN
+  /admin/coupon/update:
+    patch:
+      consumes:
+      - application/json
+      description: UPDATING COUPONS IN THE ADMINS END
+      operationId: ADMIN-UPDATING-COUPON
+      parameters:
+      - description: Enter the coupon id to update
+        in: query
+        name: couponid
+        required: true
+        type: string
+      - description: Enter the body of the coupon
+        in: body
+        name: coupon_details
+        schema:
+          $ref: '#/definitions/utils.BodyAddCoupon'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResWidgets'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR UPDATING COUPON
+      tags:
+      - ADMIN
+  /admin/dashboard:
+    get:
+      consumes:
+      - application/json
+      description: VIEWING DIFFERENT WIDGETS
+      operationId: ADMIN-VIEW-DASHBOARD
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResWidgets'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR VIEWING THE DASHBOARD
+      tags:
+      - ADMIN
+  /admin/login:
+    post:
+      consumes:
+      - application/json
+      description: VERIFY THE EMAIL,PASSWORD AND GENERATE A JWT TOKEN AND SET IT TO
+        A COOKIE
+      operationId: ADMIN-LOGIN
+      parameters:
+      - description: Enter the email and password
+        in: body
+        name: login_details
+        required: true
+        schema:
+          $ref: '#/definitions/utils.BodyLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR ADMIN LOGIN
+      tags:
+      - ADMIN
+  /admin/logout:
+    post:
+      consumes:
+      - application/json
+      description: ADMIN LOGOUT
+      operationId: ADMIN-LOGOUT
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR ADMIN LOGOUT
+      tags:
+      - ADMIN
+  /admin/order:
+    get:
+      consumes:
+      - application/json
+      description: Admin can view all orders.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR VIEWING ALL ORDERS
+      tags:
+      - ADMIN
+  /admin/order/detail:
+    get:
+      consumes:
+      - application/json
+      description: Users can the selected order details.
+      parameters:
+      - description: Enter the order id
+        in: query
+        name: orderid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR VIEWING ORDERS DETAILS
+      tags:
+      - ADMIN USER
+  /admin/order/update/status:
+    post:
+      consumes:
+      - application/json
+      description: Admin can change the ststus of orders
+      parameters:
+      - description: Enter the order details id
+        in: query
+        name: orderdetailid
+        required: true
+        type: integer
+      - description: Enter the status id
+        in: query
+        name: statusid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR CHANGING THE STATUS OF A ORDER
+      tags:
+      - ADMIN
+  /admin/product:
+    get:
+      consumes:
+      - application/json
+      description: LISTING ALL PRODUCTS FROM ADMINS AND USERS END
+      parameters:
+      - description: Enter the page number to display
+        in: query
+        name: page
+        type: integer
+      - description: Number of items to retrieve per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR LISTING ALL PRODUCTS
+      tags:
+      - ADMIN USER
+  /admin/product/add:
+    post:
+      consumes:
+      - application/json
+      description: ADDING PRODUCT FROM ADMINS END
+      operationId: ADMIN-ADD-PRODUCT
+      parameters:
+      - description: Enter the product details
+        in: body
+        name: product_details
+        schema:
+          $ref: '#/definitions/utils.AddProduct'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR ADDING PRODUCT
+      tags:
+      - ADMIN
+  /admin/product/bybrands/{brandid}:
+    get:
+      consumes:
+      - application/json
+      description: LISTING ALL PRODUCTS FROM ADMINS AND USERS END BASED ON BRANDS
+      parameters:
+      - description: Enter the brand id
+        in: path
+        name: brandid
+        required: true
+        type: string
+      - description: Enter the page number to display
+        in: query
+        name: page
+        type: integer
+      - description: Number of items to retrieve per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR LISTING ALL PRODUCTS BASED ON CATEGBRANDSORY
+      tags:
+      - ADMIN USER
+  /admin/product/bycategory/{categoryid}:
+    get:
+      consumes:
+      - application/json
+      description: LISTING ALL PRODUCTS FROM ADMINS AND USERS END BASED ON CATEGORY
+      parameters:
+      - description: Enter the category id
+        in: path
+        name: categoryid
+        required: true
+        type: string
+      - description: Enter the page number to display
+        in: query
+        name: page
+        type: integer
+      - description: Number of items to retrieve per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR LISTING ALL PRODUCTS BASED ON CATEGORY
+      tags:
+      - ADMIN USER
+  /admin/product/delete/{productid}:
+    post:
+      consumes:
+      - application/json
+      description: DELETING PRODUCT BASED ON PRODUCT ID
+      operationId: ADMIN-DELETE-PRODUCT
+      parameters:
+      - description: Enter the product id that you would like to delete
+        in: path
+        name: productid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR DELETING A PRODUCT
+      tags:
+      - ADMIN
+  /admin/product/detail/{productid}:
+    get:
+      consumes:
+      - application/json
+      description: LISTING ALL PRODUCTS DETAILS FROM ADMINS AND USERS END
+      parameters:
+      - description: Enter the product id that you would like to see the details of
+        in: path
+        name: productid
+        required: true
+        type: string
+      - description: Enter the page number to display
+        in: query
+        name: page
+        type: integer
+      - description: Number of items to retrieve
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR LISTING PRODUCTS DETAILS BY ID
+      tags:
+      - ADMIN USER
+  /admin/product/detail/add:
+    post:
+      consumes:
+      - application/json
+      description: ADDING PRODUCT DETAILS FROM ADMINS END
+      operationId: ADMIN-ADD-PRODUCT-DETAILS
+      parameters:
+      - description: Enter the product details
+        in: body
+        name: product_details
+        schema:
+          $ref: '#/definitions/utils.AddProductDetail'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR ADDING PRODUCT DETAILS
+      tags:
+      - ADMIN
+  /admin/product/detail/delete/{productdetailid}:
+    delete:
+      consumes:
+      - application/json
+      description: DELETING PRODUCT DETAILS FROM ADMINS END
+      operationId: ADMIN-DELETE-PRODUCT-DETAILS
+      parameters:
+      - description: Enter the product details id that you would like to delete
+        in: path
+        name: productdetailid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR DELETE PRODUCT DETAILS
+      tags:
+      - ADMIN
+  /admin/product/detail/update/{productdetailid}:
+    patch:
+      consumes:
+      - application/json
+      description: UPDATING PRODUCT DETAILS FROM ADMINS END
+      operationId: ADMIN-EDIT-PRODUCT-DETAILS
+      parameters:
+      - description: Enter the product details id that you would like to make the
+          change
+        in: path
+        name: productdetailid
+        required: true
+        type: string
+      - description: Enter the product details
+        in: body
+        name: product_details
+        required: true
+        schema:
+          $ref: '#/definitions/utils.AddProductDetail'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR EDITING PRODUCT DETAILS
+      tags:
+      - ADMIN
+  /admin/product/update/{productid}:
+    patch:
+      consumes:
+      - application/json
+      description: UPDATING PRODUCT DETAILS FROM ADMINS END
+      operationId: ADMIN-EDIT-PRODUCT
+      parameters:
+      - description: Enter the product id that you would like to make the change
+        in: path
+        name: productid
+        required: true
+        type: string
+      - description: Enter the category details
+        in: body
+        name: product_details
+        required: true
+        schema:
+          $ref: '#/definitions/utils.AddProduct'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR EDITING PRODUCT
+      tags:
+      - ADMIN
+  /admin/sales:
+    get:
+      consumes:
+      - application/json
+      description: ADMIN SALES REPORT, VIA MONTHLY AND YEARLY
+      operationId: ADMIN-SALES-REPORT
+      parameters:
+      - description: Enter frequency
+        in: query
+        name: frequency
+        required: true
+        type: string
+      - description: Enter the month
+        in: query
+        name: month
+        type: integer
+      - description: Enter the year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Enter the page number to display
+        in: query
+        name: page_number
+        type: integer
+      - description: Number of items to retrieve per page
+        in: query
+        name: count
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR GETTING SALES REPORT
+      tags:
+      - ADMIN
+  /admin/signup:
+    post:
+      consumes:
+      - application/json
+      description: CREATE A NEW ADMIN WITH REQUIRED DETAILS
+      operationId: SIGNUP-ADMIN
+      parameters:
+      - description: New Admin Details
+        in: body
+        name: admin_details
+        schema:
+          $ref: '#/definitions/utils.BodySignUpuser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR NEW ADMIN SIGN UP
+      tags:
+      - ADMIN
+  /admin/signup/otp/verify:
+    post:
+      consumes:
+      - application/json
+      description: VERIFY THE OTP AND UPDATE THE VERIFIED COLUMN
+      operationId: SIGNUP-ADMIN-OTP-VERIFY
+      parameters:
+      - description: otp
+        in: body
+        name: otp_details
+        schema:
+          $ref: '#/definitions/utils.Otpverify'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR NEW ADMIN SIGN UP OTP VERIFICATION
+      tags:
+      - ADMIN
+  /admin/user:
+    get:
+      consumes:
+      - application/json
+      description: LISTING ALL EXISTING USERS
+      operationId: ADMIN-LIST-USERS
+      parameters:
+      - description: Enter the page number to display
+        in: query
+        name: page
+        type: integer
+      - description: Number of items to retrieve per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR LISTING USERS
+      tags:
+      - ADMIN
+  /admin/user/{userid}/make:
+    patch:
+      consumes:
+      - application/json
+      description: GRANTING ACCESS FOR INDIVIDUAL USERS.
+      operationId: ADMIN-ACCESS
+      parameters:
+      - description: Enter the specific user id
+        in: path
+        name: userid
+        required: true
+        type: string
+      - description: Enter true/false
+        in: query
+        name: access
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR BLOCKING/UNBLOCKING USERS
+      tags:
+      - ADMIN
+  /user/cart:
+    get:
+      consumes:
+      - application/json
+      description: LISTING CART AND ITEMS FROM USERS END
+      operationId: USER-LIST-CART
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR DISPLAYING CART TO USER
+      tags:
+      - USER
+  /user/cart/add:
+    put:
+      consumes:
+      - application/json
+      description: ADDING ITEMS TO CART FROM USERS END
+      operationId: USER-ADD-TO-CART
+      parameters:
+      - description: Enter the product id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR ADDING PRODUCTS TO CART BY USER
+      tags:
+      - USER
+  /user/cart/remove:
+    put:
+      consumes:
+      - application/json
+      description: REMOVING ITEMS FROM CART FROM USERS END
+      operationId: USER-REMOVE-FROM-CART
+      parameters:
+      - description: Enter the product id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR REMOVING PRODUCTS TO CART BY USER
+      tags:
+      - USER
+  /user/checkout/add:
+    get:
+      consumes:
+      - application/json
+      description: Users can place a new order with the cart items.
+      operationId: USER-PROCEED-ORDER
+      parameters:
+      - description: Enter the payment id
+        in: query
+        name: paymentid
+        required: true
+        type: string
+      - description: Enter the address id
+        in: query
+        name: addressid
+        required: true
+        type: string
+      - description: If you have a coupon,Enter the coupon code
+        in: query
+        name: code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR PLACING A NEW ORDER
+      tags:
+      - USER
+  /user/filter/brands:
+    get:
+      consumes:
+      - application/json
+      description: LISTING ALL BRANDS USERS END
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR LISTING ALL BRANDS
+      tags:
+      - USER
+  /user/filter/brands/{brandid}/products:
+    get:
+      consumes:
+      - application/json
+      description: LISTING ALL PRODUCTS FROM ADMINS AND USERS END BASED ON BRANDS
+      parameters:
+      - description: Enter the brand id
+        in: path
+        name: brandid
+        required: true
+        type: string
+      - description: Enter the page number to display
+        in: query
+        name: page
+        type: integer
+      - description: Number of items to retrieve per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR LISTING ALL PRODUCTS BASED ON CATEGBRANDSORY
+      tags:
+      - ADMIN USER
+  /user/filter/category:
+    get:
+      consumes:
+      - application/json
+      description: LISTING ALL CATEGORIES FROM USERS END
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR LISTING ALL CATEGORIES
+      tags:
+      - USER
+  /user/filter/category/{categoryid}/products:
+    get:
+      consumes:
+      - application/json
+      description: LISTING ALL PRODUCTS FROM ADMINS AND USERS END BASED ON CATEGORY
+      parameters:
+      - description: Enter the category id
+        in: path
+        name: categoryid
+        required: true
+        type: string
+      - description: Enter the page number to display
+        in: query
+        name: page
+        type: integer
+      - description: Number of items to retrieve per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR LISTING ALL PRODUCTS BASED ON CATEGORY
+      tags:
+      - ADMIN USER
+  /user/forgot/password:
+    post:
+      consumes:
+      - application/json
+      description: VERIFY THE EMAIL AND NUMBER AND FIND THE DATA. SEND THE OTP AND
+        VERIFY WITH NEW PASSWORD AND OTP.
+      operationId: USER-FORGOT-PASSWORD
+      parameters:
+      - description: Enter the email and phoneNumber
+        in: body
+        name: login_details
+        required: true
+        schema:
+          $ref: '#/definitions/utils.OtpLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR USER FORGOT PASSWORD OPTION
+      tags:
+      - USER
+  /user/forgot/password/otp/verify:
+    patch:
+      consumes:
+      - application/json
+      description: VERIFY THE OTP AND ENTER A NEW PASSWORD
+      operationId: USER-FORGOT-PASSWORD-OTP-VERIFY
+      parameters:
+      - description: Enter the Otp and New Password
+        in: body
+        name: verify_details
+        schema:
+          $ref: '#/definitions/utils.Otpverify'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR USER FORGOT PASSWORD OTP VERIFICATION
+      tags:
+      - USER
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: VERIFY THE EMAIL,PASSWORD AND GENERATE A JWT TOKEN AND SET IT TO
+        A COOKIE
+      operationId: USER-LOGIN
+      parameters:
+      - description: Enter the email and password
+        in: body
+        name: login_details
+        required: true
+        schema:
+          $ref: '#/definitions/utils.BodyLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR USER LOGIN
+      tags:
+      - USER
+  /user/login/otp:
+    post:
+      consumes:
+      - application/json
+      description: LOGIN A USER USING OTP
+      operationId: LOGIN-USER-OTP
+      parameters:
+      - description: Enter email and mobile number
+        in: body
+        name: user_details
+        required: true
+        schema:
+          $ref: '#/definitions/utils.OtpLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR USER LOGIN USING OTP
+      tags:
+      - USER
+  /user/login/otp/verify:
+    post:
+      consumes:
+      - application/json
+      description: VERIFY THE OTP AND MAKE THE USER LOGGED IN
+      operationId: LOGIN-USER-OTP-VERIFY
+      parameters:
+      - description: otp
+        in: body
+        name: otp_details
+        schema:
+          $ref: '#/definitions/utils.Otpverify'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR USER LOGIN OTP VERIFICATION
+      tags:
+      - USER
+  /user/logout:
+    post:
+      consumes:
+      - application/json
+      description: LOGOUT USER AND ALSO CLEAR COOKIES
+      operationId: USER-LOGOUT
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR USER LOGOUT
+      tags:
+      - USER
+  /user/orders:
+    get:
+      consumes:
+      - application/json
+      description: Users can view all orders.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR VIEWING ORDERS
+      tags:
+      - USER
+  /user/orders/cancel:
+    patch:
+      consumes:
+      - application/json
+      description: Users can cancel orders
+      parameters:
+      - description: Enter the order details id
+        in: query
+        name: orderdetailid
+        required: true
+        type: integer
+      - description: Enter the status id
+        in: query
+        name: statusid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR CANCELLING A ORDER
+      tags:
+      - USER
+  /user/orders/detail:
+    get:
+      consumes:
+      - application/json
+      description: Users can the selected order details.
+      parameters:
+      - description: Enter the order id
+        in: query
+        name: orderid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR VIEWING ORDERS DETAILS
+      tags:
+      - ADMIN USER
+  /user/orders/return:
+    patch:
+      consumes:
+      - application/json
+      description: Users can return orders
+      parameters:
+      - description: Enter the order details id
+        in: query
+        name: orderdetailid
+        required: true
+        type: integer
+      - description: Enter the status id
+        in: query
+        name: statusid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR RETURNING A ORDER
+      tags:
+      - USER
+  /user/products:
+    get:
+      consumes:
+      - application/json
+      description: LISTING ALL PRODUCTS FROM ADMINS AND USERS END
+      parameters:
+      - description: Enter the page number to display
+        in: query
+        name: page
+        type: integer
+      - description: Number of items to retrieve per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR LISTING ALL PRODUCTS
+      tags:
+      - ADMIN USER
+  /user/products/{productid}:
+    get:
+      consumes:
+      - application/json
+      description: LISTING ALL PRODUCTS DETAILS FROM ADMINS AND USERS END
+      parameters:
+      - description: Enter the product id that you would like to see the details of
+        in: path
+        name: productid
+        required: true
+        type: string
+      - description: Enter the page number to display
+        in: query
+        name: page
+        type: integer
+      - description: Number of items to retrieve
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR LISTING PRODUCTS DETAILS BY ID
+      tags:
+      - ADMIN USER
+  /user/profile:
+    get:
+      consumes:
+      - application/json
+      description: VIEW USER PROFILE
+      operationId: USER-PROFILE VIEEW
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR VIEW PROFILE
+      tags:
+      - USER
+  /user/profile/address:
+    get:
+      consumes:
+      - application/json
+      description: LISTING ALL ADDRESSES FOR THE PARTICULAR USER
+      operationId: USER-LIST-ADDRESS
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR LISTING ADDRESSES
+      tags:
+      - USER
+  /user/profile/address/add:
+    post:
+      consumes:
+      - application/json
+      description: ADDING NEW ADDRESS TO USER PROFILE
+      operationId: USER-ADD-ADDRESS
+      parameters:
+      - description: Add the address details
+        in: body
+        name: address_details
+        required: true
+        schema:
+          $ref: '#/definitions/utils.AddAddress'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR ADDING ADDRESS
+      tags:
+      - USER
+  /user/profile/edit/profile:
+    patch:
+      consumes:
+      - application/json
+      description: EDIT/UPDATE USER PROFILE
+      operationId: USER-PROFILE EDIT
+      parameters:
+      - description: Edit the details as per wish
+        in: body
+        name: update_details
+        required: true
+        schema:
+          $ref: '#/definitions/utils.EditProfileReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR EDIT PROFILE
+      tags:
+      - USER
+  /user/signup:
+    post:
+      consumes:
+      - application/json
+      description: CREATE A NEW USER WITH REQUIRED DETAILS
+      operationId: SIGNUP-USER
+      parameters:
+      - description: New user Details
+        in: body
+        name: user_details
+        schema:
+          $ref: '#/definitions/utils.BodySignUpuser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR NEW USER SIGN UP
+      tags:
+      - USER
+  /user/signup/otp/verify:
+    post:
+      consumes:
+      - application/json
+      description: VERIFY THE OTP AND UPDATE THE VERIFIED COLUMN
+      operationId: SIGNUP-USER-OTP-VERIFY
+      parameters:
+      - description: otp
+        in: body
+        name: otp_details
+        schema:
+          $ref: '#/definitions/utils.Otpverify'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR NEW USER SIGN UP OTP VERIFICATION
+      tags:
+      - USER
+  /user/wallet:
+    get:
+      consumes:
+      - application/json
+      description: VIEWING THE WALLET FROM USERS END
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: API FOR VIEWING THE WALLER
+      tags:
+      - USER
+swagger: "2.0"

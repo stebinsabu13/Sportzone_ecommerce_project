@@ -44,6 +44,8 @@ func AdminRoutes(api *gin.RouterGroup, adminHandler *handler.AdminHandler, produ
 			product.POST("/add", productHandler.AddProduct)
 			product.PATCH("/update/:productid", productHandler.UpdateProduct)
 			product.DELETE("/delete/:productid", productHandler.DeleteProduct)
+			product.GET("/bycategory/:categoryid", productHandler.ProductsByCategory)
+			product.GET("/bybrands/:brandid", productHandler.ProductsByBrands)
 			productdetail := product.Group("/detail")
 			{
 				productdetail.GET("/:productid", productHandler.FindDetailsProductById)

@@ -7,6 +7,25 @@ import (
 	di "github.com/stebinsabu13/ecommerce-api/pkg/di"
 )
 
+//	@title			SPORTZONE_E-COMMERCE REST API
+//	@version		2.0
+//	@description	SPORTZONE_E-COMMERCE REST API built using Go, PSQL, REST API following Clean Architecture.
+
+//	@contact
+// name: Stebin Sabu
+// url: https://github.com/stebinsabu13
+// email: stebinsabu369@gmail.com
+
+//	@license
+// name: MIT
+// url: https://opensource.org/licenses/MIT
+
+//	@host	localhost:3000
+
+//	@Basepath	/
+//	@Accept		json
+//	@Produce	json
+//	@Router		/ [get]
 func main() {
 	config, configErr := config.LoadConfig()
 	if configErr != nil {

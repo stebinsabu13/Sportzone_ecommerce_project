@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/copier"
 	"github.com/stebinsabu13/ecommerce-api/pkg/auth"
 	"github.com/stebinsabu13/ecommerce-api/pkg/domain"
 	"github.com/stebinsabu13/ecommerce-api/pkg/support"
@@ -28,39 +29,48 @@ func NewAdminHandler(usecase services.AdminUseCase, otpusecase services.OtpUseCa
 	}
 }
 
+// ADMIN LOGIN
+//
+//	@Summary		API FOR ADMIN LOGIN
+//	@ID				ADMIN-LOGIN
+//	@Description	VERIFY THE EMAIL,PASSWORD AND GENERATE A JWT TOKEN AND SET IT TO A COOKIE
+//	@Tags			ADMIN
+//	@Accept			json
+//	@Produce		json
+//	@Param			login_details	body		utils.BodyLogin	true	"Enter the email and password"
+//	@Success		200				{object}	utils.Response
+//	@Failure		400				{object}	utils.Response
+//	@Failure		401				{object}	utils.Response
+//	@Failure		500				{object}	utils.Response
+//	@Router			/admin/login [post]
 func (cr *AdminHandler) LoginHandler(c *gin.Context) {
 	var body utils.BodyLogin
 	if err := c.BindJSON(&body); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		response := utils.ErrorResponse(400, "Error: Failed to read json body", err.Error(), body)
+		c.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
 	admin, err := cr.AdminUseCase.FindbyEmail(c.Request.Context(), body.Email)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		response := utils.ErrorResponse(401, "Error: Admin Doesn't exsist", err.Error(), body)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 		return
 	}
 	if ok := support.CheckPasswordHash(body.Password, admin.Password); !ok {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid Password",
-		})
+		response := utils.ErrorResponse(401, "Error: Please check the password", err.Error(), body)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 		return
 	}
 	tokenString, err := auth.GenerateJWT(admin.ID)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": "Not able to generate token, login again",
-		})
+		response := utils.ErrorResponse(500, "Error: Error generating the jwt token", err.Error(), body)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, response)
 		return
 	}
-	c.SetCookie("admin-token", tokenString, int(time.Now().Add(5*time.Minute).Unix()), "/", "sportzone.cloud", true, true)
+	c.SetCookie("admin-token", tokenString, int(time.Now().Add(5*time.Minute).Unix()), "/", "localhost", false, true)
 	c.Set("admin-id", admin.ID)
-	c.JSON(http.StatusOK, gin.H{
-		"Success": "Admin Login",
-	})
+	response1 := utils.SuccessResponse(200, "Success: Login Successful")
+	c.JSON(http.StatusOK, response1)
 }
 
 // func (cr AdminHandler) HomeHandler(c *gin.Context) {
@@ -81,72 +91,117 @@ func (cr *AdminHandler) LoginHandler(c *gin.Context) {
 // 	c.JSON(http.StatusOK, admin)
 // }
 
+// ADMIN LOGOUT
+//
+//	@Summary		API FOR ADMIN LOGOUT
+//	@ID				ADMIN-LOGOUT
+//	@Description	ADMIN LOGOUT
+//	@Tags			ADMIN
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	utils.Response
+//	@Failure		401	{object}	utils.Response
+//	@Failure		400	{object}	utils.Response
+//	@Failure		500	{object}	utils.Response
+//	@Router			/admin/logout [post]
 func (cr *AdminHandler) LogoutHandler(c *gin.Context) {
-	c.SetCookie("admin-token", "", -1, "/", "sportzone.cloud", true, true)
-	c.JSON(http.StatusOK, gin.H{
-		"logout": "Success",
-	})
+	c.SetCookie("admin-token", "", -1, "/", "localhost", false, true)
+	response := utils.SuccessResponse(200, "Success: Logout Successful", nil)
+	c.JSON(http.StatusOK, response)
 }
 
+// ADMIN SIGN-UP WITH SENDING OTP
+//
+//	@Summary		API FOR NEW ADMIN SIGN UP
+//	@ID				SIGNUP-ADMIN
+//	@Description	CREATE A NEW ADMIN WITH REQUIRED DETAILS
+//	@Tags			ADMIN
+//	@Accept			json
+//	@Produce		json
+//	@Param			admin_details	body		utils.BodySignUpuser	false	"New Admin Details"
+//	@Success		200				{object}	utils.Response
+//	@Failure		400				{object}	utils.Response
+//	@Failure		400				{object}	utils.Response
+//	@Failure		500				{object}	utils.Response
+//	@Router			/admin/signup [post]
 func (cr *AdminHandler) SignUp(c *gin.Context) {
 	var signUp_user utils.BodySignUpuser
 	if err := c.BindJSON(&signUp_user); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		response := utils.ErrorResponse(400, "Error: Failed to read json body", err.Error(), signUp_user)
+		c.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
 	mobile_num, err := cr.AdminUseCase.SignUpAdmin(c.Request.Context(), signUp_user)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		response := utils.ErrorResponse(500, "Error: Check the error", err.Error(), nil)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, response)
 		return
 	}
 	respSid, err1 := cr.OtpUseCase.TwilioSendOTP(c.Request.Context(), mobile_num)
 	if err1 != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": err1.Error(),
-		})
+		response := utils.ErrorResponse(500, "Error: Failed to send otp", err.Error(), nil)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, response)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"Success":     "Enter the otp and the responseid",
-		"responseid":  respSid,
-		"referalcode": signUp_user.ReferalCode,
-	})
+	response := utils.SuccessResponse(200, "Enter the otp and the responseid", respSid, signUp_user.ReferalCode)
+	c.JSON(http.StatusOK, response)
 }
 
+// USER SIGN-UP WITH VERIFICATION OF OTP
+//
+//	@Summary		API FOR NEW ADMIN SIGN UP OTP VERIFICATION
+//	@ID				SIGNUP-ADMIN-OTP-VERIFY
+//	@Description	VERIFY THE OTP AND UPDATE THE VERIFIED COLUMN
+//	@Tags			ADMIN
+//	@Accept			json
+//	@Produce		json
+//	@Param			otp_details	body		utils.Otpverify	false	"otp"
+//	@Success		200			{object}	utils.Response
+//	@Failure		401			{object}	utils.Response
+//	@Failure		400			{object}	utils.Response
+//	@Failure		500			{object}	utils.Response
+//	@Router			/admin/signup/otp/verify [post]
 func (cr *AdminHandler) SignupOtpverify(c *gin.Context) {
 	var OTP utils.Otpverify
 	if err := c.BindJSON(&OTP); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"error": "Error binding json",
-		})
+		response := utils.ErrorResponse(400, "Error: Failed to read json body", err.Error(), OTP)
+		c.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
 	session, err := cr.OtpUseCase.TwilioVerifyOTP(c.Request.Context(), OTP)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		response := utils.ErrorResponse(401, "Error: Verification failed", err.Error(), OTP)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 		return
 	}
 	err1 := cr.AdminUseCase.UpdateVerify(session.MobileNum, OTP.ReferalCode)
 	if err1 != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": err1.Error(),
-		})
+		response := utils.ErrorResponse(500, "Error: Failed to update the verification status of admin", err.Error(), nil)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, response)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"User registration": "Success",
-	})
+	response1 := utils.SuccessResponse(200, "Success: Admin Phone Number Successfully verified", session.MobileNum)
+	c.JSON(http.StatusOK, response1)
 }
 
+// LIST USERS
+//
+//	@Summary		API FOR LISTING USERS
+//	@ID				ADMIN-LIST-USERS
+//	@Description	LISTING ALL EXISTING USERS
+//	@Tags			ADMIN
+//	@Accept			json
+//	@Produce		json
+//	@Param			page	query		int	false	"Enter the page number to display"
+//	@Param			limit	query		int	false	"Number of items to retrieve per page"
+//	@Success		200		{object}	utils.Response
+//	@Failure		401		{object}	utils.Response
+//	@Failure		400		{object}	utils.Response
+//	@Failure		500		{object}	utils.Response
+//	@Router			/admin/user [get]
 func (cr *AdminHandler) ListAllUsers(c *gin.Context) {
-	page, err := strconv.Atoi(c.Query("page"))
-	limit, err1 := strconv.Atoi(c.Query("limit"))
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, err1 := strconv.Atoi(c.DefaultQuery("limit", "5"))
 	err = errors.Join(err, err1)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
@@ -171,6 +226,21 @@ func (cr *AdminHandler) ListAllUsers(c *gin.Context) {
 	})
 }
 
+// ACCESS HANDLER
+//
+//	@Summary		API FOR BLOCKING/UNBLOCKING USERS
+//	@ID				ADMIN-ACCESS
+//	@Description	GRANTING ACCESS FOR INDIVIDUAL USERS.
+//	@Tags			ADMIN
+//	@Accept			json
+//	@Produce		json
+//	@Param			userid	path		string	true	"Enter the specific user id"
+//	@Param			access	query		string	false	"Enter true/false"
+//	@Success		200		{object}	utils.Response
+//	@Failure		401		{object}	utils.Response
+//	@Failure		400		{object}	utils.Response
+//	@Failure		500		{object}	utils.Response
+//	@Router			/admin/user/{userid}/make [patch]
 func (cr *AdminHandler) AccessManage(c *gin.Context) {
 	id := c.Param("userid")
 	str := c.Query("access")
@@ -187,6 +257,19 @@ func (cr *AdminHandler) AccessManage(c *gin.Context) {
 	})
 }
 
+// LIST CATEGORY
+//
+//	@Summary		API FOR LISTING ALL CATEGORIES
+//	@Description	LISTING ALL CATEGORIES FROM ADMINS AND USERS END
+//	@Tags			ADMIN USER
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	utils.Response
+//	@Failure		401	{object}	utils.Response
+//	@Failure		400	{object}	utils.Response
+//	@Failure		500	{object}	utils.Response
+//	@Router			/user/filter/category [get]
+//	@Router			/admin/category [get]
 func (cr *AdminHandler) ListAllCategories(c *gin.Context) {
 	categories, err := cr.AdminUseCase.ListAllCategories(c.Request.Context())
 	if err != nil {
@@ -200,25 +283,54 @@ func (cr *AdminHandler) ListAllCategories(c *gin.Context) {
 	})
 }
 
+// CATEGORY MANAGEMENT
+
+// ADD CATEGORY
+//
+//	@Summary		API FOR ADDING CATEGORY
+//	@ID				ADMIN-ADD-CATEGORY
+//	@Description	ADDING CATEGORY FROM ADMINS END
+//	@Tags			ADMIN
+//	@Accept			json
+//	@Produce		json
+//	@Param			category_details	body		utils.AddCategory	true	"Enter the category name"
+//	@Success		200					{object}	utils.Response
+//	@Failure		401					{object}	utils.Response
+//	@Failure		400					{object}	utils.Response
+//	@Failure		500					{object}	utils.Response
+//	@Router			/admin/category/add [post]
 func (cr *AdminHandler) AddCategory(c *gin.Context) {
+	var body utils.AddCategory
+	if err := c.BindJSON(&body); err != nil {
+		response := utils.ErrorResponse(400, "Error: Error binding JSON", err.Error(), body)
+		c.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
 	var category domain.Category
-	if err := c.BindJSON(&category); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"error": "error while binding json",
-		})
-		return
-	}
+	copier.Copy(&category, &body)
 	if err := cr.AdminUseCase.AddCategory(c.Request.Context(), category); err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		response := utils.ErrorResponse(500, "Error: Faild to add cateogy", err.Error(), category)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, response)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"Success": "Category added",
-	})
+	response := utils.SuccessResponse(200, "Success: successfully added a new category", category)
+	c.JSON(http.StatusOK, response)
 }
 
+// DELETE CATEGORY
+//
+//	@Summary		API FOR DELETING A CATEGORY
+//	@ID				ADMIN-DELETE-CATEGORY
+//	@Description	DELETING CATEGORY AND ALSO CHECKING WHETHER IT HAS A EXISTING PRODUCT
+//	@Tags			ADMIN
+//	@Accept			json
+//	@Produce		json
+//	@Param			categoryid	path		string	true	"Enter the category id that you would like to delete"
+//	@Success		200			{object}	utils.Response
+//	@Failure		401			{object}	utils.Response
+//	@Failure		400			{object}	utils.Response
+//	@Failure		500			{object}	utils.Response
+//	@Router			/admin/category/delete/{categoryid} [delete]
 func (cr *AdminHandler) DeleteCategory(c *gin.Context) {
 	id := c.Param("categoryid")
 	if err := cr.AdminUseCase.DeleteCategory(c.Request.Context(), id); err != nil {
@@ -232,6 +344,24 @@ func (cr *AdminHandler) DeleteCategory(c *gin.Context) {
 	})
 }
 
+// ADMIN SALES REPORT
+//
+//	@Summary		API FOR GETTING SALES REPORT
+//	@ID				ADMIN-SALES-REPORT
+//	@Description	ADMIN SALES REPORT, VIA MONTHLY AND YEARLY
+//	@Tags			ADMIN
+//	@Accept			json
+//	@Produce		json
+//	@Param			frequency	query		string	true	"Enter frequency"
+//	@Param			month		query		int		false	"Enter the month"
+//	@Param			year		query		int		true	"Enter the year"
+//	@Param			page_number	query		int		false	"Enter the page number to display"
+//	@Param			count		query		int		false	"Number of items to retrieve per page"
+//	@Success		200			{object}	utils.Response
+//	@Failure		401			{object}	utils.Response
+//	@Failure		400			{object}	utils.Response
+//	@Failure		500			{object}	utils.Response
+//	@Router			/admin/sales [get]
 func (cr *AdminHandler) FullSalesReport(c *gin.Context) {
 	// time
 	monthInt, err1 := strconv.Atoi(c.DefaultQuery("month", "1"))
@@ -240,13 +370,12 @@ func (cr *AdminHandler) FullSalesReport(c *gin.Context) {
 	frequency := c.Query("frequency")
 
 	// page
-	count, err3 := strconv.Atoi(c.Query("count"))
-	pageNumber, err4 := strconv.Atoi(c.Query("page_number"))
+	count, err3 := strconv.Atoi(c.DefaultQuery("count", "5"))
+	pageNumber, err4 := strconv.Atoi(c.DefaultQuery("page_number", "1"))
 	err := errors.Join(err1, err2, err3, err4)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		response := utils.ErrorResponse(400, "Failed to parse the requried fields", err1.Error(), nil)
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 	offset := (pageNumber - 1) * count
@@ -331,6 +460,19 @@ func (cr *AdminHandler) FullSalesReport(c *gin.Context) {
 	}
 }
 
+// DELETE CATEGORY
+//
+//	@Summary		API FOR VIEWING THE DASHBOARD
+//	@ID				ADMIN-VIEW-DASHBOARD
+//	@Description	VIEWING DIFFERENT WIDGETS
+//	@Tags			ADMIN
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	utils.ResWidgets
+//	@Failure		401	{object}	utils.Response
+//	@Failure		400	{object}	utils.Response
+//	@Failure		500	{object}	utils.Response
+//	@Router			/admin/dashboard [get]
 func (cr *AdminHandler) Dashboard(c *gin.Context) {
 	reswidgets, err := cr.AdminUseCase.Widgets()
 	if err != nil {
@@ -344,6 +486,20 @@ func (cr *AdminHandler) Dashboard(c *gin.Context) {
 	})
 }
 
+// @Summary		API FOR ADDING THE COUPON
+// @ID				ADMIN-ADD-COUPON
+// @Description	ADDING COUPONS IN THE ADMINS END
+// @Tags			ADMIN
+// @Accept			json
+// @Produce		json
+//
+// @Param			coupon_details	body		utils.BodyAddCoupon	false	"Enter the details of the coupon"
+//
+// @Success		200				{object}	utils.ResWidgets
+// @Failure		401				{object}	utils.Response
+// @Failure		400				{object}	utils.Response
+// @Failure		500				{object}	utils.Response
+// @Router			/admin/coupon/add [post]
 func (cr *AdminHandler) AddCoupon(c *gin.Context) {
 	var couponBody utils.BodyAddCoupon
 	if err := c.BindJSON(&couponBody); err != nil {
@@ -379,9 +535,23 @@ func (cr *AdminHandler) AddCoupon(c *gin.Context) {
 	})
 }
 
+// @Summary		API FOR VIEWING ALL COUPON
+// @ID				ADMIN-VIEW-COUPON
+// @Description	VIEWING COUPONS IN THE ADMINS END
+// @Tags			ADMIN
+// @Accept			json
+// @Produce		json
+//
+// @Param			page	query		string	false	"Enter the page number"
+// @Param			limit	query		string	false	"Enter the number of coupons to retrieve"
+// @Success		200		{object}	utils.ResWidgets
+// @Failure		401		{object}	utils.Response
+// @Failure		400		{object}	utils.Response
+// @Failure		500		{object}	utils.Response
+// @Router			/admin/coupon [get]
 func (cr *AdminHandler) GetAllCoupons(c *gin.Context) {
-	page, err := strconv.Atoi(c.Query("page"))
-	limit, err1 := strconv.Atoi(c.Query("limit"))
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, err1 := strconv.Atoi(c.DefaultQuery("limit", "5"))
 	err = errors.Join(err, err1)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
@@ -406,6 +576,20 @@ func (cr *AdminHandler) GetAllCoupons(c *gin.Context) {
 	})
 }
 
+// @Summary		API FOR UPDATING COUPON
+// @ID				ADMIN-UPDATING-COUPON
+// @Description	UPDATING COUPONS IN THE ADMINS END
+// @Tags			ADMIN
+// @Accept			json
+// @Produce		json
+//
+// @Param			couponid		query		string				true	"Enter the coupon id to update"
+// @Param			coupon_details	body		utils.BodyAddCoupon	false	"Enter the body of the coupon"
+// @Success		200				{object}	utils.ResWidgets
+// @Failure		401				{object}	utils.Response
+// @Failure		400				{object}	utils.Response
+// @Failure		500				{object}	utils.Response
+// @Router			/admin/coupon/update [patch]
 func (cr *AdminHandler) UpdateCoupon(c *gin.Context) {
 	couponid := c.Query("couponid")
 	var couponBody utils.BodyAddCoupon
@@ -442,6 +626,19 @@ func (cr *AdminHandler) UpdateCoupon(c *gin.Context) {
 	})
 }
 
+// @Summary		API FOR VIEWING COUPON BY ID
+// @ID				ADMIN-COUPON-BY-ID
+// @Description	VIEWING COUPON BY ID IN THE ADMINS END
+// @Tags			ADMIN
+// @Accept			json
+// @Produce		json
+//
+// @Param			couponid	path		string	true	"Enter the coupon id to view"
+// @Success		200			{object}	utils.ResWidgets
+// @Failure		401			{object}	utils.Response
+// @Failure		400			{object}	utils.Response
+// @Failure		500			{object}	utils.Response
+// @Router			/admin/coupon/{couponid} [get]
 func (cr *AdminHandler) GetCouponByID(c *gin.Context) {
 	couponid := c.Param("couponid")
 	coupon, err := cr.AdminUseCase.GetCouponByID(couponid)
@@ -456,6 +653,19 @@ func (cr *AdminHandler) GetCouponByID(c *gin.Context) {
 	})
 }
 
+// @Summary		API FOR DELETING COUPON
+// @ID				ADMIN-COUPON-DELETION
+// @Description	DELETING COUPON IN THE ADMINS END
+// @Tags			ADMIN
+// @Accept			json
+// @Produce		json
+//
+// @Param			couponid	path		string	true	"Enter the coupon id to delete"
+// @Success		200			{object}	utils.ResWidgets
+// @Failure		401			{object}	utils.Response
+// @Failure		400			{object}	utils.Response
+// @Failure		500			{object}	utils.Response
+// @Router			/admin/coupon/delete/{couponid} [delete]
 func (cr *AdminHandler) DeleteCoupon(c *gin.Context) {
 	couponid := c.Param("couponid")
 	if err := cr.AdminUseCase.DeleteCoupon(couponid); err != nil {

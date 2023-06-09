@@ -17,6 +17,18 @@ func NewCartHandler(usecase services.CartUseCase) *CartHandler {
 	}
 }
 
+// LIST CART_DETAILS
+//	@Summary		API FOR DISPLAYING CART TO USER
+//	@ID				USER-LIST-CART
+//	@Description	LISTING CART AND ITEMS FROM USERS END
+//	@Tags			USER
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	utils.Response
+//	@Failure		401	{object}	utils.Response
+//	@Failure		400	{object}	utils.Response
+//	@Failure		500	{object}	utils.Response
+//	@Router			/user/cart [get]
 func (cr *CartHandler) ViewCart(c *gin.Context) {
 	id, ok := c.Get("user-id")
 	if !ok {
@@ -38,6 +50,19 @@ func (cr *CartHandler) ViewCart(c *gin.Context) {
 	})
 }
 
+// ADD TO CART
+//	@Summary		API FOR ADDING PRODUCTS TO CART BY USER
+//	@ID				USER-ADD-TO-CART
+//	@Description	ADDING ITEMS TO CART FROM USERS END
+//	@Tags			USER
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	query		string	true	"Enter the product id"
+//	@Success		200	{object}	utils.Response
+//	@Failure		401	{object}	utils.Response
+//	@Failure		400	{object}	utils.Response
+//	@Failure		500	{object}	utils.Response
+//	@Router			/user/cart/add [put]
 func (cr *CartHandler) AddtoCart(c *gin.Context) {
 	prodetid := c.Query("id")
 	id, ok := c.Get("user-id")
@@ -59,6 +84,19 @@ func (cr *CartHandler) AddtoCart(c *gin.Context) {
 	})
 }
 
+// REMOVE ITEMS FROM CART
+//	@Summary		API FOR REMOVING PRODUCTS TO CART BY USER
+//	@ID				USER-REMOVE-FROM-CART
+//	@Description	REMOVING ITEMS FROM CART FROM USERS END
+//	@Tags			USER
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	query		string	true	"Enter the product id"
+//	@Success		200	{object}	utils.Response
+//	@Failure		401	{object}	utils.Response
+//	@Failure		400	{object}	utils.Response
+//	@Failure		500	{object}	utils.Response
+//	@Router			/user/cart/remove [put]
 func (cr *CartHandler) RemovefromCart(c *gin.Context) {
 	prodetid := c.Query("id")
 	id, ok := c.Get("user-id")

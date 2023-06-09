@@ -57,3 +57,31 @@ type BodySignUpuser struct {
 	ConfirmPassword string `json:"confirmpassword" binding:"required"`
 	ReferalCode     string `json:"referalcode"`
 }
+
+type AddCategory struct {
+	CategoryName string `json:"categoryname" binding:"required"`
+}
+type AddAddress struct {
+	HouseName string `json:"housename" binding:"required"`
+	Street    string `json:"street" binding:"required"`
+	City      string `json:"city" binding:"required" `
+	State     string `json:"state" binding:"required" `
+	Country   string `json:"country" binding:"required"`
+	Pincode   string `json:"pincode" binding:"required" `
+}
+
+type AddProduct struct {
+	ModelName  string `json:"modelname" binding:"required"`
+	Image      string `json:"image" binding:"required"`
+	BrandID    uint   `json:"brandid"`
+	CategoryID uint   `json:"categoryid" binding:"required"`
+}
+
+type AddProductDetail struct {
+	Price             uint `json:"price" binding:"required"`
+	Stock             uint `json:"stock" binding:"required"`
+	AvailableSizeID   uint `json:"availablesizeid" binding:"required"`
+	AvailableColourID uint `json:"availablecolourid" binding:"required"`
+	ProductID         uint `json:"productid" binding:"required"`
+	DiscountID        uint `json:"discountid"`
+}
