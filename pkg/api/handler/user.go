@@ -77,7 +77,7 @@ func (cr *UserHandler) LoginHandler(c *gin.Context) {
 	}
 	c.SetCookie("user-token", tokenString, int(time.Now().Add(5*time.Minute).Unix()), "/", "sportzone.cloud", true, true)
 	c.JSON(http.StatusOK, gin.H{
-		"Success": "user login",
+		"Success": user,
 	})
 }
 
@@ -565,16 +565,16 @@ func (cr *UserHandler) ListAllCategories(c *gin.Context) {
 	})
 }
 
-//	@Summary		API FOR VIEWING THE WALLER
-//	@Description	VIEWING THE WALLET FROM USERS END
-//	@Tags			USER
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object}	utils.Response
-//	@Failure		401	{object}	utils.Response
-//	@Failure		400	{object}	utils.Response
-//	@Failure		500	{object}	utils.Response
-//	@Router			/user/wallet [get]
+// @Summary		API FOR VIEWING THE WALLER
+// @Description	VIEWING THE WALLET FROM USERS END
+// @Tags			USER
+// @Accept			json
+// @Produce		json
+// @Success		200	{object}	utils.Response
+// @Failure		401	{object}	utils.Response
+// @Failure		400	{object}	utils.Response
+// @Failure		500	{object}	utils.Response
+// @Router			/user/wallet [get]
 func (cr *UserHandler) ViewWallet(c *gin.Context) {
 	userid, ok := c.Get("user-id")
 	if !ok {
