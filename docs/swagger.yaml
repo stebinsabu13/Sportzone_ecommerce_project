@@ -176,7 +176,7 @@ definitions:
       status_code:
         type: integer
     type: object
-host: www.sportzone.cloud
+host: localhost:3000
 info:
   contact: {}
   description: SPORTZONE_E-COMMERCE REST API built using Go, PSQL, REST API following

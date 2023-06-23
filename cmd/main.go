@@ -20,12 +20,12 @@ import (
 // name: MIT
 // url: https://opensource.org/licenses/MIT
 
-//	@host	www.sportzone.cloud
+//	@host	localhost:3000
 
-//	@Basepath	/
-//	@Accept		json
-//	@Produce	json
-//	@Router		/ [get]
+// @Basepath	/
+// @Accept		json
+// @Produce	json
+// @Router		/ [get]
 func main() {
 	config, configErr := config.LoadConfig()
 	if configErr != nil {

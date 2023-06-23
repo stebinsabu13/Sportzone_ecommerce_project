@@ -26,11 +26,13 @@ func NewUserRepository(Db *gorm.DB) interfaces.UserRepository {
 // 	return users, err
 // }
 
-func (c *userDatabase) FindbyEmail(ctx context.Context, email string) (domain.User, error) {
-	var user domain.User
-	_ = c.DB.Where("email=?", email).Find(&user)
+func (c *userDatabase) FindbyEmail(ctx context.Context, email string) (utils.ResponseUsers, error) {
+	var user utils.ResponseUsers
+	query := `SELECT * from users where email=$1 and deleted_at IS NULL`
+	c.DB.Raw(query, email).Scan(&user)
+	// _ = c.DB.Where("email=?", email).Find(&user)
 	if user.ID == 0 {
-		return domain.User{}, errors.New("invalid email")
+		return user, errors.New("invalid email")
 	}
 	if user.Block {
 		return user, errors.New("you are blocked")
@@ -70,15 +72,16 @@ func (c *userDatabase) FindbyEmailorMobilenum(ctx context.Context, body utils.Ot
 	return user, nil
 }
 
-func (c *userDatabase) SignUpUser(ctx context.Context, user domain.User) (string, error) {
+func (c *userDatabase) SignUpUser(ctx context.Context, user utils.BodySignUpuser) (string, error) {
+	var userid uint
 	tx := c.DB.Begin()
-	err := tx.Create(&user).Error
-	if err != nil {
+	query1 := `insert into users(created_at,updated_at,first_name,last_name,email,mobile_num,password,referal_code)values($1,$2,$3,$4,$5,$6,$7,$8) returning id`
+	if err := tx.Exec(query1, "2023-06-23 18:23:05.398", "2023-06-23 18:23:05.398", user.FirstName, user.LastName, user.Email, user.MobileNum, user.Password, user.ReferalCode).Scan(&userid).Error; err != nil {
 		tx.Rollback()
 		return user.MobileNum, err
 	}
 	query := `insert into carts(user_id)values($1)`
-	if err := tx.Exec(query, user.ID).Error; err != nil {
+	if err := tx.Exec(query, userid).Error; err != nil {
 		tx.Rollback()
 		return user.MobileNum, err
 	}
@@ -91,7 +94,7 @@ func (c *userDatabase) SignUpUser(ctx context.Context, user domain.User) (string
 
 func (c *userDatabase) ShowDetails(ctx context.Context, id uint) (utils.ResponseUsers, error) {
 	var user utils.ResponseUsers
-	query := `SELECT first_name,last_name,email,mobile_num,referal_code from users where id=?`
+	query := `SELECT id,first_name,last_name,email,mobile_num,referal_code from users where id=?`
 	if err := c.DB.Raw(query, id).Scan(&user).Error; err != nil {
 		return user, err
 	}
