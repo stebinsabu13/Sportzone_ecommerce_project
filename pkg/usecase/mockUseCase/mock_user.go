@@ -79,10 +79,10 @@ func (mr *MockUserUseCaseMockRecorder) EditProfile(arg0, arg1, arg2 interface{})
 }
 
 // FindbyEmail mocks base method.
-func (m *MockUserUseCase) FindbyEmail(ctx context.Context, email string) (domain.User, error) {
+func (m *MockUserUseCase) FindbyEmail(ctx context.Context, email string) (utils.ResponseUsers, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindbyEmail", ctx, email)
-	ret0, _ := ret[0].(domain.User)
+	ret0, _ := ret[0].(utils.ResponseUsers)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

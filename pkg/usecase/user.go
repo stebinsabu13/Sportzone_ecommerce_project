@@ -26,7 +26,7 @@ func NewUserUseCase(repo interfaces.UserRepository) services.UserUseCase {
 //		return users, err
 //	}
 
-func (c *userUseCase) FindbyEmail(ctx context.Context, email string) (domain.User, error) {
+func (c *userUseCase) FindbyEmail(ctx context.Context, email string) (utils.ResponseUsers, error) {
 	user, err := c.userRepo.FindbyEmail(ctx, email)
 	return user, err
 }
@@ -42,15 +42,9 @@ func (c *userUseCase) SignUpUser(ctx context.Context, user utils.BodySignUpuser)
 		return "", errors.New("error while hashing password")
 	}
 	userrefercode := support.ReferalCodeGenerator()
-	USER := domain.User{
-		FirstName:   user.FirstName,
-		LastName:    user.LastName,
-		Email:       user.Email,
-		MobileNum:   user.MobileNum,
-		Password:    hash,
-		ReferalCode: userrefercode,
-	}
-	mobile_num, err := c.userRepo.SignUpUser(ctx, USER)
+	user.Password = hash
+	user.ReferalCode = userrefercode
+	mobile_num, err := c.userRepo.SignUpUser(ctx, user)
 	return mobile_num, err
 }
 

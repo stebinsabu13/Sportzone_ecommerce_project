@@ -9,7 +9,7 @@ import (
 
 type UserUseCase interface {
 	// FindAll(ctx context.Context) ([]domain.User, error)
-	FindbyEmail(ctx context.Context, email string) (domain.User, error)
+	FindbyEmail(ctx context.Context, email string) (utils.ResponseUsers, error)
 	FindbyUserID(context.Context, uint) (domain.User, error)
 	UpdateVerify(string, string) error
 	SignUpUser(ctx context.Context, user utils.BodySignUpuser) (string, error)

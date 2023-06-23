@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stebinsabu13/ecommerce-api/pkg/domain"
 	"github.com/stebinsabu13/ecommerce-api/pkg/repository/mockRepo"
+	"github.com/stebinsabu13/ecommerce-api/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,14 +18,15 @@ func TestFindbyEmail(t *testing.T) {
 	tests := []struct {
 		name           string
 		input          string
-		expectedOutput domain.User
+		expectedOutput utils.ResponseUsers
 		buildStub      func(userRepo mockRepo.MockUserRepository)
 		expectederr    error
 	}{
 		{
 			name:  "User exsists",
 			input: "stebinsabu369@gmail.com",
-			expectedOutput: domain.User{
+			expectedOutput: utils.ResponseUsers{
+				ID:        1,
 				FirstName: "Stebin",
 				LastName:  "Sabu",
 				Email:     "stebinsabu369@gmail.com",
@@ -36,7 +37,8 @@ func TestFindbyEmail(t *testing.T) {
 			},
 			buildStub: func(userRepo mockRepo.MockUserRepository) {
 				userRepo.EXPECT().FindbyEmail(
-					gomock.Any(), "stebinsabu369@gmail.com").Times(1).Return(domain.User{
+					gomock.Any(), "stebinsabu369@gmail.com").Times(1).Return(utils.ResponseUsers{
+					ID:        1,
 					FirstName: "Stebin",
 					LastName:  "Sabu",
 					Email:     "stebinsabu369@gmail.com",
@@ -51,11 +53,11 @@ func TestFindbyEmail(t *testing.T) {
 		{
 			name:           "not exsist user",
 			input:          "notexsist@gmail.com",
-			expectedOutput: domain.User{},
+			expectedOutput: utils.ResponseUsers{},
 			buildStub: func(userRepo mockRepo.MockUserRepository) {
 				userRepo.EXPECT().FindbyEmail(
 					gomock.Any(), "notexsist@gmail.com").Times(1).Return(
-					domain.User{},
+					utils.ResponseUsers{},
 					errors.New("not exsist user"),
 				)
 			},
