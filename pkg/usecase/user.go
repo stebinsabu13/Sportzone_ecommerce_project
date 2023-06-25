@@ -6,7 +6,6 @@ import (
 
 	domain "github.com/stebinsabu13/ecommerce-api/pkg/domain"
 	interfaces "github.com/stebinsabu13/ecommerce-api/pkg/repository/interface"
-	"github.com/stebinsabu13/ecommerce-api/pkg/support"
 	services "github.com/stebinsabu13/ecommerce-api/pkg/usecase/interface"
 	"github.com/stebinsabu13/ecommerce-api/pkg/utils"
 )
@@ -37,13 +36,13 @@ func (c *userUseCase) SignUpUser(ctx context.Context, user utils.BodySignUpuser)
 	if _, err := c.userRepo.FindbyEmail(ctx, user.Email); err == nil {
 		return "", errors.New("user already exsists")
 	}
-	hash, err := support.HashPassword(user.Password)
-	if err != nil {
-		return "", errors.New("error while hashing password")
-	}
-	userrefercode := support.ReferalCodeGenerator()
-	user.Password = hash
-	user.ReferalCode = userrefercode
+	// hash, err := support.HashPassword(user.Password)
+	// if err != nil {
+	// 	return "", errors.New("error while hashing password")
+	// }
+	// userrefercode := support.ReferalCodeGenerator()
+	// user.Password = hash
+	// user.ReferalCode = userrefercode
 	mobile_num, err := c.userRepo.SignUpUser(ctx, user)
 	return mobile_num, err
 }

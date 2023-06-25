@@ -64,7 +64,7 @@ func (cr *UserHandler) LoginHandler(c *gin.Context) {
 	ok := support.CheckPasswordHash(body.Password, user.Password)
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "Invalid Password",
+			"error": "invalid password",
 		})
 		return
 	}
