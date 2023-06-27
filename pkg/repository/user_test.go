@@ -69,7 +69,6 @@ func TestFindbyEmail(t *testing.T) {
 
 			assert.Equal(t, tt.expectedOutput, actualOutput)
 
-			// Check that all expectations were met
 			err = mockc.ExpectationsWereMet()
 			if err != nil {
 				t.Errorf("Unfulfilled expectations: %s", err)

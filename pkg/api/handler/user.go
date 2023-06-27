@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -50,7 +51,7 @@ func (cr *UserHandler) LoginHandler(c *gin.Context) {
 
 	if err := c.BindJSON(&body); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
+			"error": errors.New("failed to bind the required fields"),
 		})
 		return
 	}

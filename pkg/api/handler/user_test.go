@@ -28,6 +28,16 @@ func TestLoginHandler(t *testing.T) {
 		expectederr    error
 	}{
 		{
+			name: "binding error",
+			body: utils.BodyLogin{},
+			buildStub: func(userUseCase mockUseCase.MockUserUseCase) {
+
+			},
+			expectedOutput: utils.ResponseUsers{},
+			expectedCode:   http.StatusBadRequest,
+			expectederr:    errors.New("failed to bind the required fields"),
+		},
+		{
 			name: "Invalid user",
 			body: utils.BodyLogin{
 				Email:    "randomusr@gmail.com",
@@ -84,16 +94,8 @@ func TestLoginHandler(t *testing.T) {
 			gin.SetMode(gin.TestMode)
 			engine := gin.Default()
 
-			// initialize a response recorder for capturing http  response
 			recorder := httptest.NewRecorder()
 
-			//url string for the endpoint
-			url := "/user/login"
-
-			// create a new route for testing
-			engine.POST(url, userHandler.LoginHandler)
-
-			// body is a slice of bytes. It is used for Marshaling data to json and passing to the request body
 			// var body []byte
 
 			// marshaling user data in the test case
@@ -102,34 +104,29 @@ func TestLoginHandler(t *testing.T) {
 				"password": tt.body.Password,
 			}
 			b, err := json.Marshal(bodyjson)
-			// validate no error occurred while marshaling data to json
+
 			assert.NoError(t, err)
+			url := "/user/login"
 
-			// NewRequest returns a new incoming server Request, which we can pass to a http.Handler for testing
-			req := httptest.NewRequest(http.MethodPost, url, bytes.NewBuffer(b)) // check what is buffer
+			req := httptest.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
+			engine.POST(url, userHandler.LoginHandler)
 
-			// req is a pointer to http.Request . With httptest.NewRequest we are mentioning the http method, endpoint and body
 			engine.ServeHTTP(recorder, req)
 
-			// actual will hold the actual reponse
 			var actual utils.ResponseUsers
 
-			// unmarshalling json data to response.Response format
 			err = json.Unmarshal(recorder.Body.Bytes(), &actual)
 
-			// validating no error occurred while unmarshalling json to response.Response struct
 			assert.NoError(t, err)
 
-			// validate expected status code and received status code are same
 			assert.Equal(t, tt.expectedCode, recorder.Code)
+			if tt.expectedCode == http.StatusOK {
+				assert.Equal(t, gin.H{"Success": tt.expectedOutput}, actual)
 
-			// validate expected response message and received response are same
-			assert.Equal(t, gin.H{"Success": tt.expectedOutput}, actual)
-
+			} else {
+				assert.Equal(t, gin.H{"error": tt.expectedOutput}, actual)
+			}
+			// assert.Equal(t,tt.expectederr,)
 		})
 	}
-}
-
-func TestSignUp(t *testing.T) {
-
 }
