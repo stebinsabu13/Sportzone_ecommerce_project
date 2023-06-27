@@ -34,28 +34,32 @@ func TestFindbyEmail(t *testing.T) {
 			input:          "notexsisting@gmail.com",
 			expectedOutput: utils.ResponseUsers{},
 			buildStub: func(mock sqlmock.Sqlmock) {
-				query := `SELECT \* from users where email=\$1 and deleted_at IS NULL`
+				query := `SELECT \* from users where email=\$1`
 				mock.ExpectQuery(query).WithArgs("notexsisting@gmail.com").WillReturnError(errors.New("invalid email"))
 			},
 			expectederr: errors.New("invalid email"),
 		},
-		// {
-		// 	name:  "valid email",
-		// 	input: "stebinsabu369@gmail.com",
-		// 	expectedOutput: utils.ResponseUsers{
-		// 		FirstName: "Stebin",
-		// 		LastName:  "Sabu",
-		// 		Email:     "stebinsabu369@gmail.com",
-		// 		Password:  "Stebin@333",
-		// 		MobileNum: "9947650091",
-		// 	},
-		// 	buildStub: func(mock sqlmock.Sqlmock) {
-		// 		rows := sqlmock.NewRows([]string{"first_name", "last_name", "email", "password", "mobile_num", "block", "verified"}).AddRow("Stebin", "Sabu", "stebinsabu369@gmail.com", "Stebin@333", "9947650091", false, true)
-		// 		query := `SELECT \* from users where email=\$1 and deleted_at IS NULL`
-		// 		mock.ExpectQuery(query).WithArgs("stebinsabu369@gmail.com").WillReturnRows(rows)
-		// 	},
-		// 	expectederr: nil,
-		// },
+		{
+			name:  "valid email",
+			input: "stebinsabu369@gmail.com",
+			expectedOutput: utils.ResponseUsers{
+				ID:          1,
+				FirstName:   "Stebin",
+				LastName:    "Sabu",
+				Email:       "stebinsabu369@gmail.com",
+				Password:    "Stebin@333",
+				MobileNum:   "9947650091",
+				Block:       false,
+				Verified:    true,
+				ReferalCode: "jsjil",
+			},
+			buildStub: func(mock sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"id", "first_name", "last_name", "email", "password", "mobile_num", "block", "verified", "referal_code"}).AddRow(1, "Stebin", "Sabu", "stebinsabu369@gmail.com", "Stebin@333", "9947650091", false, true, "jsjil")
+				query := `SELECT \* from users where email=\$1`
+				mock.ExpectQuery(query).WithArgs("stebinsabu369@gmail.com").WillReturnRows(rows)
+			},
+			expectederr: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -90,8 +94,9 @@ func TestSignUpUser(t *testing.T) {
 	tests := []struct {
 		name           string
 		input          utils.BodySignUpuser
-		buildstub      func(mock sqlmock.Sqlmock)
+		buildstub      func(mock sqlmock.Sqlmock, user utils.BodySignUpuser)
 		expectedOutput string
+		expectedErr    error
 	}{
 		{
 			name: "SignUp user",
@@ -103,30 +108,48 @@ func TestSignUpUser(t *testing.T) {
 				Password:    "Stebin@333",
 				ReferalCode: "jdj43",
 			},
-			buildstub: func(mock sqlmock.Sqlmock) {
-				// mockTime := time.Date(2023, 6, 23, 17, 6, 47, 201, time.UTC)
-				// current := time.Now()
-				// trunctated := current.Truncate(time.Millisecond)
-				// query := `insert into users\(created_at,updated_at,first_name,last_name,email,mobile_num,password,referal_code\)values\(\'.+\'\,\'.+\'\,\'Stebin\'\,\'Sabu\'\,\'stebinsabu369@gmail.com\'\,\'9947650091\'\,\'Stebin@333\'\,\'jdj43\'\) returning id`
+			buildstub: func(mock sqlmock.Sqlmock, user utils.BodySignUpuser) {
 				mock.ExpectBegin()
-				// row := sqlmock.NewRows([]string{"id"}).AddRow(1)
-				mock.ExpectExec(`insert into users(created_at,updated_at,first_name,last_name,email,mobile_num,password,referal_code)values($1,$2,$3,$4,$5,$6,$7,$8) returning id`).
-					WithArgs("2023-06-23 18:23:05.398", "2023-06-23 18:23:05.398", "Stebin", "Sabu", "stebinsabu369@gmail.com", "9947650091", "Stebin@333", "jdj43").
+				mock.ExpectQuery("insert into users").
+					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+				mock.ExpectExec("insert into carts").
+					WithArgs(1).
 					WillReturnResult(sqlmock.NewResult(1, 1))
-				// mock.ExpectExec(query).WillReturnResult(sqlmock.NewResult(1, 1))
-				mock.ExpectExec("insert into carts(user_id)values($1)").WithArgs(1).WillReturnResult(sqlmock.NewResult(1, 1))
 				mock.ExpectCommit()
 			},
 			expectedOutput: "9947650091",
+			expectedErr:    nil,
+		},
+		{
+			name: "failed to signupuser",
+			input: utils.BodySignUpuser{
+				FirstName:   "Stebin",
+				LastName:    "Sabu",
+				Email:       "stebinsabu369@gmail.com",
+				MobileNum:   "9947650091",
+				Password:    "Stebin@333",
+				ReferalCode: "jdj43",
+			},
+			buildstub: func(mock sqlmock.Sqlmock, user utils.BodySignUpuser) {
+				mock.ExpectBegin()
+				mock.ExpectQuery("insert into users").
+					WillReturnError(errors.New("unique constraint violation"))
+				mock.ExpectRollback()
+			},
+			expectedOutput: "9947650091",
+			expectedErr:    errors.New("unique constraint violation"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.buildstub(mockc)
+			tt.buildstub(mockc, tt.input)
 			actualOutput, actualerr := userRepository.SignUpUser(context.TODO(), tt.input)
-			if actualerr != nil {
-				t.Errorf("An error occurred signing up the user: %v", err)
+			if tt.expectedErr == nil {
+				assert.NoError(t, actualerr)
+			} else {
+				assert.Equal(t, tt.expectedErr, actualerr)
 			}
+
 			assert.Equal(t, tt.expectedOutput, actualOutput)
 
 			// Check that all expectations were met

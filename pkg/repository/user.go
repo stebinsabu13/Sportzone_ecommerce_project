@@ -28,7 +28,7 @@ func NewUserRepository(Db *gorm.DB) interfaces.UserRepository {
 
 func (c *userDatabase) FindbyEmail(ctx context.Context, email string) (utils.ResponseUsers, error) {
 	var user utils.ResponseUsers
-	query := `SELECT * from users where email=$1 and deleted_at IS NULL`
+	query := `SELECT * from users where email=$1`
 	c.DB.Raw(query, email).Scan(&user)
 	// _ = c.DB.Where("email=?", email).Find(&user)
 	if user.ID == 0 {
@@ -76,7 +76,7 @@ func (c *userDatabase) SignUpUser(ctx context.Context, user utils.BodySignUpuser
 	var userid uint
 	tx := c.DB.Begin()
 	query1 := `insert into users(created_at,updated_at,first_name,last_name,email,mobile_num,password,referal_code)values($1,$2,$3,$4,$5,$6,$7,$8) returning id`
-	if err := tx.Exec(query1, "2023-06-23 18:23:05.398", "2023-06-23 18:23:05.398", user.FirstName, user.LastName, user.Email, user.MobileNum, user.Password, user.ReferalCode).Scan(&userid).Error; err != nil {
+	if err := tx.Raw(query1, time.Now(), time.Now(), user.FirstName, user.LastName, user.Email, user.MobileNum, user.Password, user.ReferalCode).Scan(&userid).Error; err != nil {
 		tx.Rollback()
 		return user.MobileNum, err
 	}
