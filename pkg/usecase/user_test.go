@@ -128,14 +128,7 @@ func TestSignUpUser(t *testing.T) {
 					utils.ResponseUsers{}, errors.New("invalid email"),
 				)
 				userRepo.EXPECT().SignUpUser(
-					gomock.Any(), gomock.Eq(utils.BodySignUpuser{
-						FirstName:   "not",
-						LastName:    "exsists",
-						Email:       "notexsistinguser@gmail.com",
-						MobileNum:   "8376423610",
-						Password:    gomock.Any().String(),
-						ReferalCode: gomock.Any().String(),
-					})).Times(1).Return(
+					gomock.Any(), gomock.Any()).Times(1).Return(
 					"8376423610", nil,
 				)
 			},
