@@ -28,6 +28,7 @@ import (
 // @Produce	json
 // @Router		/ [get]
 func main() {
+	//hi hello
 	config, configErr := config.LoadConfig()
 	if configErr != nil {
 		log.Fatal("cannot load config: ", configErr)
