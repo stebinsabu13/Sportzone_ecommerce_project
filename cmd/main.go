@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	config "github.com/stebinsabu13/ecommerce-api/pkg/config"
@@ -28,12 +27,10 @@ import (
 // @Produce	json
 // @Router		/ [get]
 func main() {
-	//hi hello
 	config, configErr := config.LoadConfig()
 	if configErr != nil {
 		log.Fatal("cannot load config: ", configErr)
 	}
-	fmt.Println("Hi a change occured")
 	server, diErr := di.InitializeAPI(config)
 	if diErr != nil {
 		log.Fatal("cannot start server: ", diErr)
