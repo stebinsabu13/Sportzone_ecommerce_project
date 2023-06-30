@@ -27,7 +27,7 @@ func AuthorizationMiddleware(role string) gin.HandlerFunc {
 					})
 					return
 				}
-				c.SetCookie(role+"-token", refreshtokenstring, int(time.Now().Add(5*time.Minute).Unix()), "/", "sportzone.cloud", true, true)
+				c.SetCookie(role+"-token", refreshtokenstring, int(time.Now().Add(5*time.Minute).Unix()), "/", "sportzone.cloud", true, false)
 			} else {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 					"error": err1.Error(),

@@ -20,7 +20,7 @@ import (
 // name: MIT
 // url: https://opensource.org/licenses/MIT
 
-//	@host	localhost:3000
+//	@host	sportzone.cloud
 
 // @Basepath	/
 // @Accept		json
