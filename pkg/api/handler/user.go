@@ -76,7 +76,7 @@ func (cr *UserHandler) LoginHandler(c *gin.Context) {
 		})
 		return
 	}
-	c.SetCookie("user-token", tokenString, int(time.Now().Add(5*time.Minute).Unix()), "/", "sportzone.cloud", true, true)
+	c.SetCookie("user-token", tokenString, int(time.Now().Add(5*time.Minute).Unix()), "/", "localhost", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"Success": user,
 	})
