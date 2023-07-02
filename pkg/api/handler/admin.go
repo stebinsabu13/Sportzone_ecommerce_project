@@ -105,7 +105,7 @@ func (cr *AdminHandler) LoginHandler(c *gin.Context) {
 //	@Failure		500	{object}	utils.Response
 //	@Router			/admin/logout [post]
 func (cr *AdminHandler) LogoutHandler(c *gin.Context) {
-	c.SetCookie("admin-token", "", -1, "/", "sportzone.cloud", true, true)
+	c.SetCookie("admin-token", "", -1, "/", "localhost", false, true)
 	response := utils.SuccessResponse(200, "Success: Logout Successful", nil)
 	c.JSON(http.StatusOK, response)
 }

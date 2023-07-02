@@ -199,7 +199,7 @@ func (cr *UserHandler) SignupOtpverify(c *gin.Context) {
 //	@Failure		500	{object}	utils.Response
 //	@Router			/user/logout [post]
 func (cr *UserHandler) LogoutHandler(c *gin.Context) {
-	c.SetCookie("user-token", "", -1, "/", "sportzone.cloud", true, true)
+	c.SetCookie("user-token", "", -1, "/", "localhost", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"logout": "Success",
 	})

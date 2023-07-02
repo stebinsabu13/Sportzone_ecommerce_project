@@ -16,7 +16,7 @@ services:
       - postgres-db:/var/lib/postgresql/data
 
   web:
-    build: .
+    image: stebin13/sportzone_ecommerce
     env_file:
       - .env
     networks:

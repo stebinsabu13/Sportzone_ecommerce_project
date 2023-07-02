@@ -1,2 +1,3 @@
 #environment variables
 .env
+secret-config.yml

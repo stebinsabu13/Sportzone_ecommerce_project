@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sportzone
+  labels:
+    app: sportzone-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sportzone-app
+  template:
+    metadata:
+      labels:
+        app: sportzone-app
+    spec:
+      containers:
+        - name: ecommerce-app
+          image: stebin13/sportzone_ecommerce
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DB_USER
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-user
+            - name: DB_PASSWORD
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-password
+            - name: DB_NAME
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-db
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: ecommerce-config
+                  key: postgres-host
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: ecommerce-config
+                  key: postgres-port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecommerce-service
+spec:
+  selector:
+    app: ecommerce-app
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+      nodePort: 30000
