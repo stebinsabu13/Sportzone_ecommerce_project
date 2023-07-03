@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sportzone
+  name: sportzone-deployment
   labels:
     app: sportzone-app
 spec:
@@ -24,38 +24,38 @@ spec:
               valueFrom: 
                 secretKeyRef:
                   name: postgres-secret
-                  key: postgres-user
+                  key: db-username
             - name: DB_PASSWORD
               valueFrom: 
                 secretKeyRef:
                   name: postgres-secret
-                  key: postgres-password
+                  key: db-password
             - name: DB_NAME
               valueFrom: 
                 secretKeyRef:
                   name: postgres-secret
-                  key: postgres-db
+                  key: db-name
             - name: DB_HOST
               valueFrom:
                 configMapKeyRef:
-                  name: ecommerce-config
-                  key: postgres-host
+                  name: config-values
+                  key: db-host
             - name: DB_PORT
               valueFrom:
                 configMapKeyRef:
-                  name: ecommerce-config
-                  key: postgres-port
+                  name: config-values
+                  key: db-port
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: ecommerce-service
+  name: sportzone-service
 spec:
   selector:
-    app: ecommerce-app
+    app: sportzone-app
   type: LoadBalancer
   ports:
     - protocol: TCP
-      port: 8000
-      targetPort: 8000
-      nodePort: 30000
+      port: 3000
+      targetPort: 3000
+      nodePort: 31000
