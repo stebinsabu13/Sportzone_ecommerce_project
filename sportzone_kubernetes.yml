@@ -53,9 +53,28 @@ metadata:
 spec:
   selector:
     app: sportzone-app
-  type: LoadBalancer
   ports:
     - protocol: TCP
       port: 3000
       targetPort: 3000
-      nodePort: 31000
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-config
+  # annotations:
+  #   nginx.ingress.kubernetes.io/enable-cors: "true"
+spec:
+  rules:
+    - host: sportzone.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sportzone-service
+                port:
+                  number: 3000
