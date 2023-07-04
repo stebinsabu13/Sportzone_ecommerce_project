@@ -1,2 +1,4 @@
 #environment variables
 .env
+configMap.yml
+secret-config.yml
