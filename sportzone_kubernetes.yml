@@ -45,7 +45,29 @@ spec:
                 configMapKeyRef:
                   name: config-values
                   key: db-port
+            - name: JWT_CODE
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: jwt-code
+            - name: AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: auth-token
+            - name: ACCOUNT_SID
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: account-sid
+            - name: SERVICE_SID
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: service-sid
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
