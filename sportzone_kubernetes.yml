@@ -16,10 +16,15 @@ spec:
     spec:
       containers:
         - name: ecommerce-app
-          image: stebin13/sportzone_ecommerce
+          image: stebin13/sportzone_ecommerce:1.0
           ports:
             - containerPort: 3000
           env:
+            - name: EXPOSE_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: config-values
+                  key: expose-port
             - name: DB_USER
               valueFrom: 
                 secretKeyRef:
@@ -86,11 +91,9 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-config
-  # annotations:
-  #   nginx.ingress.kubernetes.io/enable-cors: "true"
 spec:
   rules:
-    - host: sportzone.com
+    - host: sportzone.cloud
       http:
         paths:
           - path: /

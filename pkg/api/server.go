@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stebinsabu13/ecommerce-api/pkg/api/handler"
 	"github.com/stebinsabu13/ecommerce-api/pkg/api/routes"
+	"github.com/stebinsabu13/ecommerce-api/pkg/config"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -41,8 +42,9 @@ func NewServerHTTP(userHandler *handler.UserHandler, adminHandler *handler.Admin
 }
 
 func (s *ServerHTTP) Start() {
+	port := config.GetLocalPort()
 	s.engine.LoadHTMLGlob("static/*.html")
-	if err := s.engine.Run(":3000"); err != nil {
+	if err := s.engine.Run(":" + port); err != nil {
 		return
 	}
 }

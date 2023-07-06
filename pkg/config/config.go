@@ -6,6 +6,7 @@ import (
 )
 
 type Config struct {
+	EXPOSEPORT     string `mapstructure:"EXPOSE_PORT"`
 	DBHost         string `mapstructure:"DB_HOST"`
 	DBName         string `mapstructure:"DB_NAME"`
 	DBUser         string `mapstructure:"DB_USER"`
@@ -20,6 +21,7 @@ type Config struct {
 }
 
 var envs = []string{
+	"EXPOSE_PORT",                                             //localport
 	"DB_HOST", "DB_NAME", "DB_USER", "DB_PORT", "DB_PASSWORD", //database
 	"JWT_CODE",                                 //jwt
 	"AUTH_TOKEN", "ACCOUNT_SID", "SERVICE_SID", //twilio details
@@ -54,6 +56,10 @@ func LoadConfig() (Config, error) {
 // to get the secred code for jwt
 func GetJWTCofig() string {
 	return config.JWT
+}
+
+func GetLocalPort() string {
+	return config.EXPOSEPORT
 }
 
 func GetCofig() Config {

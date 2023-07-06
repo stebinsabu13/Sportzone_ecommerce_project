@@ -76,7 +76,7 @@ func (cr *UserHandler) LoginHandler(c *gin.Context) {
 		})
 		return
 	}
-	c.SetCookie("user-token", tokenString, int(time.Now().Add(5*time.Minute).Unix()), "/", "localhost", false, true)
+	c.SetCookie("user-token", tokenString, int(time.Now().Add(5*time.Minute).Unix()), "/", "sportzone.cloud", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"Success": user,
 	})
@@ -199,7 +199,7 @@ func (cr *UserHandler) SignupOtpverify(c *gin.Context) {
 //	@Failure		500	{object}	utils.Response
 //	@Router			/user/logout [post]
 func (cr *UserHandler) LogoutHandler(c *gin.Context) {
-	c.SetCookie("user-token", "", -1, "/", "localhost", false, true)
+	c.SetCookie("user-token", "", -1, "/", "sportzone.cloud", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"logout": "Success",
 	})
