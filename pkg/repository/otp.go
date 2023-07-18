@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/stebinsabu13/ecommerce-api/pkg/domain"
 	interfaces "github.com/stebinsabu13/ecommerce-api/pkg/repository/interface"
@@ -21,7 +20,6 @@ func (c OtpDatabase) SaveOtp(ctx context.Context, otpsession domain.OtpSession) 
 	return err
 }
 func (c OtpDatabase) RetrieveSession(ctx context.Context, otp string) (domain.OtpSession, error) {
-	fmt.Println(otp)
 	var session domain.OtpSession
 	err := c.DB.Where("otp_id=?", otp).Find(&session).Error
 	if err != nil {

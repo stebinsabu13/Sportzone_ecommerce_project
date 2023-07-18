@@ -24,31 +24,6 @@ func (c *productUseCase) FindAllProducts(ctx context.Context, pagination utils.P
 	return products, err
 }
 
-// func (c *productUseCase) FindProduct(ctx context.Context, id string) (utils.Product, error) {
-// 	product, err := c.Productrepo.FindProduct(ctx, id)
-// 	return product, err
-// }
-
-// func (c *productUseCase) FindAvailableColours(ctx context.Context, id string) ([]utils.Colours, error) {
-// 	colours, err := c.Productrepo.FindAvailableColours(ctx, id)
-// 	return colours, err
-// }
-
-// func (c *productUseCase) FindAvailableSize(ctx context.Context, id string) ([]utils.Size, error) {
-// 	sizes, err := c.Productrepo.FindAvailableSize(ctx, id)
-// 	return sizes, err
-// }
-
-// func (c *productUseCase) FindProductDesc(ctx context.Context, id string) (utils.ResponseProducts, error) {
-// 	desc, err := c.Productrepo.FindProductDesc(ctx, id)
-// 	return desc, err
-// }
-
-// func (c *productUseCase) FindProductDiscount(ctx context.Context, id string) (uint, error) {
-// 	discount, err := c.Productrepo.FindProductDiscount(ctx, id)
-// 	return discount, err
-// }
-
 func (c *productUseCase) AddProduct(ctx context.Context, product domain.Product) error {
 	err := c.Productrepo.AddProduct(ctx, product)
 	return err

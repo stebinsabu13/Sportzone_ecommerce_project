@@ -73,24 +73,6 @@ func (cr *AdminHandler) LoginHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, response1)
 }
 
-// func (cr AdminHandler) HomeHandler(c *gin.Context) {
-// 	email, ok := c.Get("admin-email")
-// 	if !ok {
-// 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-// 			"error": "Unauthorized admin",
-// 		})
-// 		return
-// 	}
-// 	admin, err := cr.AdminUseCase.FindbyEmail(c.Request.Context(), email.(string))
-// 	if err != nil {
-// 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-// 			"error": "Unauthorized admin",
-// 		})
-// 		return
-// 	}
-// 	c.JSON(http.StatusOK, admin)
-// }
-
 // ADMIN LOGOUT
 //
 //	@Summary		API FOR ADMIN LOGOUT

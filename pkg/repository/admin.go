@@ -18,12 +18,6 @@ func NewAdminRepository(Db *gorm.DB) interfaces.AdminRepository {
 	return &adminDatabase{DB: Db}
 }
 
-// func (c *adminDatabase) FindAll(ctx context.Context) ([]domain.Admin, error) {
-// 	var admin []domain.Admin
-// 	err := c.DB.Find(&admin).Error
-// 	return admin, err
-// }
-
 func (c *adminDatabase) FindbyEmail(ctx context.Context, email string) (domain.Admin, error) {
 	var admin domain.Admin
 	_ = c.DB.Where("email=?", email).Find(&admin)
