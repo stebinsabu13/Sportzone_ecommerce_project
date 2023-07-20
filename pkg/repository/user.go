@@ -20,12 +20,6 @@ func NewUserRepository(Db *gorm.DB) interfaces.UserRepository {
 	return &userDatabase{DB: Db}
 }
 
-// func (c *userDatabase) FindAll(ctx context.Context) ([]domain.User, error) {
-// 	var users []domain.User
-// 	err := c.DB.Find(&users).Error
-// 	return users, err
-// }
-
 func (c *userDatabase) FindbyEmail(ctx context.Context, email string) (utils.ResponseUsers, error) {
 	var user utils.ResponseUsers
 	query := `SELECT * from users where email=$1`

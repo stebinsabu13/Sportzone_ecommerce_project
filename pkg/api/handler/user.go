@@ -165,26 +165,6 @@ func (cr *UserHandler) SignupOtpverify(c *gin.Context) {
 	})
 }
 
-// func (cr *UserHandler) HomeHandler(c *gin.Context) {
-// 	email, ok := c.Get("user-email")
-// 	if !ok {
-// 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-// 			"error": "Invalid user",
-// 		})
-// 	}
-// 	user, err := cr.userUseCase.FindbyEmail(c.Request.Context(), email.(string))
-// 	if err != nil {
-// 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-// 			"error": "Invalid user",
-// 		})
-// 		return
-// 	}
-// 	// response := []Response{}
-// 	// copier.Copy(&response, &users)
-
-// 	c.JSON(http.StatusOK, user)
-// }
-
 // USERLOGOUT
 //
 //	@Summary		API FOR USER LOGOUT
@@ -384,6 +364,7 @@ func (cr *UserHandler) ShowAllAddress(c *gin.Context) {
 //	@Failure		500				{object}	utils.Response
 //	@Router			/user/profile/address/add [post]
 func (cr *UserHandler) AddAddress(c *gin.Context) {
+	var body utils.AddAddress
 	id, ok := c.Get("user-id")
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
@@ -391,7 +372,6 @@ func (cr *UserHandler) AddAddress(c *gin.Context) {
 		})
 		return
 	}
-	var body utils.AddAddress
 	if err := c.BindJSON(&body); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),

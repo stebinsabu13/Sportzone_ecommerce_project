@@ -21,11 +21,6 @@ func NewUserUseCase(repo interfaces.UserRepository) services.UserUseCase {
 	}
 }
 
-//	func (c *userUseCase) FindAll(ctx context.Context) ([]domain.User, error) {
-//		users, err := c.userRepo.FindAll(ctx)
-//		return users, err
-//	}
-
 func (c *userUseCase) FindbyEmail(ctx context.Context, email string) (utils.ResponseUsers, error) {
 	user, err := c.userRepo.FindbyEmail(ctx, email)
 	return user, err

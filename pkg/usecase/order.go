@@ -168,11 +168,11 @@ func (c *orderUseCase) UpdateStatus(id, statusid uint) error {
 }
 
 func (c *orderUseCase) ValidateCoupon(userid uint, code string) (*uint, error) {
-	cart, err := c.cartRepo.FindCartById(userid)
-	if err != nil {
-		return nil, err
-	}
 	if code != "" {
+		cart, err := c.cartRepo.FindCartById(userid)
+		if err != nil {
+			return nil, err
+		}
 		coupon, err2 := c.orderrepo.FindCoupon(code)
 		if err2 != nil {
 			return nil, err2
