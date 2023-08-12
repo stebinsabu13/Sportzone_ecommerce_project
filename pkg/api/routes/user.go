@@ -6,7 +6,7 @@ import (
 	"github.com/stebinsabu13/ecommerce-api/pkg/api/middleware"
 )
 
-func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productHandler *handler.ProductHandler, cartHandler *handler.CartHandler, orderHandler *handler.OrderHandler) {
+func UserRoutes(api *gin.RouterGroup, authHandler *handler.AuthHandler, userHandler *handler.UserHandler, productHandler *handler.ProductHandler, cartHandler *handler.CartHandler, orderHandler *handler.OrderHandler) {
 
 	// login
 	login := api.Group("/user")
@@ -15,6 +15,9 @@ func UserRoutes(api *gin.RouterGroup, userHandler *handler.UserHandler, productH
 		login.POST("/login", userHandler.LoginHandler)
 		login.POST("/login/otp", userHandler.LoginOtp)
 		login.POST("/login/otp/verify", userHandler.LoginOtpverify)
+		login.GET("/login/google", authHandler.UserGoogleAuthLoginPage)
+		login.GET("/login/initialize", authHandler.UserGoogleAuthInitialize)
+		login.GET("/login/callback", authHandler.UserGoogleAuthCallBack)
 	}
 	forgotpassword := api.Group("/user/forgot/password")
 	{

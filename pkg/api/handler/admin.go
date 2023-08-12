@@ -67,7 +67,7 @@ func (cr *AdminHandler) LoginHandler(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, response)
 		return
 	}
-	c.SetCookie("admin-token", tokenString, int(time.Now().Add(5*time.Minute).Unix()), "/", "sportzone.cloud", false, true)
+	c.SetCookie("admin-token", tokenString, int(time.Now().Add(5*time.Minute).Unix()), "/", "localhost", false, true)
 	c.Set("admin-id", admin.ID)
 	response1 := utils.SuccessResponse(200, "Success: Login Successful")
 	c.JSON(http.StatusOK, response1)
